@@ -163,17 +163,32 @@ if (selectedBoss === null) {
 ```
 
 ```js
-function getLogs(filter) {
-  return fetch(
-    "https://corsproxy.io/?https://logs.fau.dev/api/logs?scope=arkesia&order=recent%20clear",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(filter),
+async function getLogs(filter, maxLogs = 300) {
+  let logs = [];
+
+  let fetching = true;
+  let newLogs;
+  while (fetching) {
+    newLogs = await fetch(
+      "https://corsproxy.io/?https://logs.fau.dev/api/logs?scope=arkesia&order=recent%20clear",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(filter),
+      }
+    ).then((response) => response.json());
+
+    // Add new logs to logs
+    logs = logs.concat(newLogs["encounters"]);
+
+    if (!newLogs["more"] || logs.length >= maxLogs) {
+      fetching = false;
     }
-  ).then((response) => response.json());
+  }
+
+  return logs;
 }
 
 const submitButton = Inputs.button("Submit", {
