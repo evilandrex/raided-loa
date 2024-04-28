@@ -23,8 +23,8 @@
       </details>
       <br/>
       ${submitButton}
+      <sub>${numLogs == 0 ? "This might take a while" : `Found ${numLogs} logs.`}</sub>
     </div>
-
 </div>
 
 ```js
@@ -163,7 +163,7 @@ if (selectedBoss === null) {
 ```
 
 ```js
-async function getLogs(filter, maxLogs = 300) {
+async function getLogs(filter, maxLogs = 20) {
   let logs = [];
 
   let fetching = true;
@@ -183,6 +183,8 @@ async function getLogs(filter, maxLogs = 300) {
     // Add new logs to logs
     logs = logs.concat(newLogs["encounters"]);
 
+    numLogs.value = numLogs.value + newLogs["encounters"].length;
+
     if (!newLogs["more"] || logs.length >= maxLogs) {
       fetching = false;
     }
@@ -190,6 +192,7 @@ async function getLogs(filter, maxLogs = 300) {
 
   return logs;
 }
+const numLogs = Mutable(0);
 
 const submitButton = Inputs.button("Submit", {
   value: null,
