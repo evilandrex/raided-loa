@@ -101,15 +101,22 @@ def boss(
 
     # Fetch logs until we hit max
     newLogsParsed = 0
-    while newLogsParsed < max_logs:
+    emptyRounds = 0
+    while newLogsParsed < max_logs and emptyRounds < patience:
         logIDs = api.fetch_logIDs(
             filter.to_dict(),
             max_logs=log_batches,
             parsed_logs=oldIDs,
             last_id=lastID,
             last_date=lastDate,
-            patience=patience,
         )
+        if len(logIDs) == 0:
+            emptyRounds += 1
+            click.echo(f"Empty batch of logs, empty rounds: {emptyRounds}/{patience}.")
+
+            continue
+        else:
+            emptyRounds = 0
 
         for logID in logIDs:
             click.echo(f"Working on log ID {logID}")
