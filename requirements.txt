@@ -1,0 +1,4 @@
+requests==2.31.0
+pandas==2.0.3
+ratelimit==2.2.1
+click==8.1.7
