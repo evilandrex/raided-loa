@@ -159,19 +159,18 @@ def fetch_log(id: int) -> List[dict]:
 
     playerEntries = []
     for player in players:
-        playerClass = playerData[player]["class"]
-        gearScore = playerData[player]["gearScore"]
-        dps = playerData[player]["dps"]
-
         playerEntries += [
             {
                 "id": id,
                 "player": player,
-                "class": playerClass,
-                "gearScore": gearScore,
-                "dps": dps,
+                "class": playerData[player]["class"],
+                "gearScore": playerData[player]["gearScore"],
+                "dps": playerData[player]["dps"],
+                "percent": playerData[player]["percent"],
                 "date": date,
                 "duration": duration,
+                "dead": playerData[player]["dead"],
+                "weird": False,
             }
         ]
 
