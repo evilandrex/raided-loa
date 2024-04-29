@@ -163,38 +163,3 @@ def fetch_log(id: int) -> List[dict]:
         ]
 
     return pd.DataFrame(playerEntries)
-
-
-if __name__ == "__main__":
-    filter = Filter(boss="Akkan", gate=3, difficulty="Hard")
-
-    # Load up old data file
-    try:
-        df = pd.read_csv(f"./data/{filter.to_name()}.csv", index_col=None)
-        oldIDs = df["id"].unique()
-
-        # Find the last ID
-        lastID = df["id"].min()
-        lastDate = df[df["id"] == lastID]["date"].values[0]
-    except FileNotFoundError:
-        df = pd.DataFrame()
-        oldIDs = []
-        lastID = None
-        lastDate = None
-
-    logIDs = fetch_logIDs(
-        filter.to_dict(),
-        max_logs=20,
-        parsed_logs=oldIDs,
-        last_id=lastID,
-        last_date=lastDate,
-    )
-
-    for logID in logIDs:
-        print(f"Working on log ID {logID}")
-        log = fetch_log(logID)
-
-        df = pd.concat([df, log])
-
-    df.to_csv(f"./data/{filter.to_name()}.csv", index=False)
-    print(df)
