@@ -91,10 +91,12 @@ def fetch_logIDs(
     parsed_logs: List[int] = [],
     last_id: int = None,
     last_date: int = None,
+    patience: int = 20,
 ) -> List[int]:
     # Keep fetching logs to get IDs until we can't
     logIDs = []
     fetching = True
+    emptyRounds = 0
     while fetching:
         if last_id is None:
             r = _call_logsAPI(filter)
@@ -111,16 +113,27 @@ def fetch_logIDs(
 
         # Get IDs
         ids = [log["id"] for log in data["encounters"]]
-        last_id = ids[-1]
-        last_date = data["encounters"][-1]["date"]
 
-        # Filter ids that we already have
-        ids = [id for id in ids if id not in parsed_logs]
-        logIDs += ids
-        print(f"Found {len(logIDs)} logs")
+        if len(ids) == 0:
+            print("No more logs!")
+        else:
+            last_id = ids[-1]
+            last_date = data["encounters"][-1]["date"]
+
+            # Filter ids that we already have
+            ids = [id for id in ids if id not in parsed_logs]
+            logIDs += ids
+            print(f"Found {len(logIDs)} logs")
+
+            if len(ids) == 0:
+                emptyRounds += 1
 
         # Check if we should keep fetching
-        fetching = data["more"] and (max_logs is None or len(logIDs) < max_logs)
+        fetching = (
+            data["more"]
+            and (max_logs is None or len(logIDs) < max_logs)
+            and emptyRounds < patience
+        )
 
     return logIDs
 

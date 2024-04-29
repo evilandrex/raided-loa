@@ -2,6 +2,17 @@ import click
 import api
 import pandas as pd
 
+BOSSES = {
+    "Sonavel": {},
+    "Gargadeth": {},
+    "Veskal": {},
+    "Brelshaza": {"Hard": [1, 2, 3, 4]},
+    "Kayangel": {"Hard": [1, 2, 3]},
+    "Akkan": {"Normal": [1, 2, 3], "Hard": [1, 2, 3]},
+    "Ivory": {"Normal": [1, 2, 3, 4], "Hard": [1, 2, 3, 4]},
+    "Thaemine": {"Normal": [1, 2, 3], "Hard": [1, 2, 3, 4]},
+}
+
 
 @click.group()
 def cli():
@@ -33,6 +44,11 @@ def cli():
     default=100,
     help="Maximum number of logs to fetch before stopping.",
 )
+@click.option(
+    "--patience",
+    default=20,
+    help="Number of empty calls before stopping.",
+)
 def boss(
     boss: str,
     gate: int = None,
@@ -41,6 +57,7 @@ def boss(
     from_scratch: bool = False,
     log_batches: int = 20,
     max_logs: int = 100,
+    patience: int = 20,
 ):
     """
     Fetch logs for a specific boss, gate, and difficulty.
@@ -91,6 +108,7 @@ def boss(
             parsed_logs=oldIDs,
             last_id=lastID,
             last_date=lastDate,
+            patience=patience,
         )
 
         for logID in logIDs:
@@ -99,6 +117,17 @@ def boss(
 
             df = pd.concat([df, log])
             newLogsParsed += 1
+
+            # Update lastID and lastDate
+            lastID = logID
+            lastDate = log["date"].values[0]
+
+        oldIDs = df["id"].unique()
+
+        # If no logs have been found, quit
+        if len(logIDs) == 0:
+            click.echo("No more logs found.")
+            break
 
         # Save to csv (saves once per batch)
         df.to_csv(f"./data/{filter.to_name()}.csv", index=False)
