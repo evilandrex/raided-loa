@@ -1,6 +1,7 @@
 import click
 import api
 import pandas as pd
+import time
 
 
 @click.group()
@@ -55,6 +56,9 @@ def boss(
     """
     click.echo(f"Fetching logs for {boss} {gate} {difficulty}")
     click.echo(f"Starting from {'latest' if from_latest else 'oldest'}")
+
+    # Start timer
+    start = time.time()
 
     # Make filter
     filter = api.Filter(boss=boss, gate=gate, difficulty=difficulty)
@@ -127,6 +131,10 @@ def boss(
 
         # Save to csv (saves once per batch)
         df.to_csv(f"./data/{filter.to_name()}.csv", index=False)
+
+    # End timer
+    end = time.time()
+    click.echo(f"Time elapsed: {end - start:.2f} seconds")
 
 
 cli.add_command(boss)
