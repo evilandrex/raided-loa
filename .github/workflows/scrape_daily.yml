@@ -1,21 +1,21 @@
-# /.github/workflows/daily.yml
-on:
-  schedule:
-    - cron:  '0 8 * * *' # every day at 8am
+# /.github/workflows/scrape_daily.yml
+# on:
+#   schedule:
+#     - cron:  '0 8 * * *' # every day at 8am
 name: Daily Log Scrape
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.8.10'
-        cache: 'pip' # caching pip dependencies
-    - run: pip install -r requirements.txt
-    - name: Scrape all bosses
-      run: python scrape.py all --from-latest --max-logs 10000 --patience 5
-    - uses: mikeal/publish-to-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub sets this for you
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.8.10"
+          cache: "pip" # caching pip dependencies
+      - run: pip install -r requirements.txt
+      - name: Scrape all bosses
+        run: python scrape.py all --from-latest --max-logs 10000 --patience 5
+      - uses: mikeal/publish-to-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub sets this for you
