@@ -6,6 +6,18 @@ from ratelimit import limits, sleep_and_retry
 import click
 import time
 
+SUPPORTS = ["Full Bloom", "Blessed Aura", "Desperate Salvation"]
+BOSSES = {
+    "Sonavel": {},
+    "Gargadeth": {},
+    "Veskal": {},
+    "Brelshaza": {"Hard": [1, 2, 3, 4]},
+    "Kayangel": {"Hard": [1, 2, 3]},
+    "Akkan": {"Normal": [1, 2, 3], "Hard": [1, 2, 3]},
+    "Ivory": {"Normal": [1, 2, 3, 4], "Hard": [1, 2, 3, 4]},
+    "Thaemine": {"Normal": [1, 2, 3], "Hard": [1, 2, 3, 4]},
+}
+
 
 class Filter:
     """Class for a query filter"""
@@ -199,7 +211,7 @@ def fetch_log(id: int) -> List[dict]:
                 "date": date,
                 "duration": duration,
                 "dead": playerData[player]["dead"],
-                "weird": False,
+                "weird": weird,
             }
         ]
 
@@ -244,7 +256,7 @@ def classify_class(log: dict) -> dict:
             )
         elif pClass == "Gunlancer":
             # First check if they're Princess Maker
-            if float(log["players"][name]["percent"]) > 5:
+            if float(log["players"][name]["percent"]) < 5:
                 playerSpecs[name] = "Princess Maker"
             else:
                 # Looking for set
@@ -425,4 +437,18 @@ def classify_class(log: dict) -> dict:
 
 
 def classify_weird(log: dict, specs: dict) -> bool:
-    pass
+    # Doesn't have 4 or 8 players
+    nPlayers = len(log["players"])
+    if nPlayers not in [4, 8]:
+        return True
+
+    # Has Princess GL
+    if "Princess Maker" in specs.values():
+        return True
+
+    # Does not have the expected number of supports
+    nSupports = len([spec for spec in specs.values() if spec in SUPPORTS])
+    if (nPlayers == 4 and not nSupports == 1) or (nPlayers == 8 and not nSupports == 2):
+        return True
+
+    return False

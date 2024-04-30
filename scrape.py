@@ -2,17 +2,6 @@ import click
 import api
 import pandas as pd
 
-BOSSES = {
-    "Sonavel": {},
-    "Gargadeth": {},
-    "Veskal": {},
-    "Brelshaza": {"Hard": [1, 2, 3, 4]},
-    "Kayangel": {"Hard": [1, 2, 3]},
-    "Akkan": {"Normal": [1, 2, 3], "Hard": [1, 2, 3]},
-    "Ivory": {"Normal": [1, 2, 3, 4], "Hard": [1, 2, 3, 4]},
-    "Thaemine": {"Normal": [1, 2, 3], "Hard": [1, 2, 3, 4]},
-}
-
 
 @click.group()
 def cli():
