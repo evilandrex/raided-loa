@@ -3,6 +3,8 @@ import json
 import pandas as pd
 from typing import List
 from ratelimit import limits, sleep_and_retry
+import click
+import time
 
 
 class Filter:
@@ -73,7 +75,7 @@ class Filter:
 
 
 @sleep_and_retry
-@limits(calls=299, period=60)
+@limits(calls=250, period=60)
 def _call_logsAPI(
     filter: dict,
     query_strings: dict = {"scope": "arkesia", "order": "recent%20clear"},
@@ -99,6 +101,7 @@ def fetch_logIDs(
     emptyRounds = 0
     while fetching:
         if last_id is None:
+            query_strings = {}
             r = _call_logsAPI(filter)
         else:
             query_strings = {
@@ -109,13 +112,21 @@ def fetch_logIDs(
             }
             r = _call_logsAPI(filter, query_strings)
 
+        if r.status_code == 429:
+            click.echo(f"Rate limited, waiting to retry.")
+            with click.progressbar(range(int(r.headers["Retry-After"]) + 30)) as bar:
+                for _ in bar:
+                    time.sleep(1)
+
+            r = _call_logsAPI(filter, query_strings)
+
         data = json.loads(r.text)
 
         # Get IDs
         ids = [log["id"] for log in data["encounters"]]
 
         if len(ids) == 0:
-            print("No more logs!")
+            click.echo("No more logs!")
         else:
             last_id = ids[-1]
             last_date = data["encounters"][-1]["date"]
@@ -123,7 +134,8 @@ def fetch_logIDs(
             # Filter ids that we already have
             ids = [id for id in ids if id not in parsed_logs]
             logIDs += ids
-            print(f"Found {len(logIDs)} logs")
+
+            click.echo(f"Found {len(ids)} logs in the last call")
 
             if len(ids) == 0:
                 emptyRounds += 1
@@ -135,11 +147,13 @@ def fetch_logIDs(
             and emptyRounds < patience
         )
 
+    click.echo(f"Found a total of {len(logIDs)} logs")
+
     return logIDs
 
 
 @sleep_and_retry
-@limits(calls=99, period=60)
+@limits(calls=80, period=60)
 def _call_logAPI(id: int) -> requests.Response:
     """Call the log API with a log ID, returns the log data"""
     return requests.get(f"https://logs.fau.dev/api/log/{id}")
@@ -147,6 +161,15 @@ def _call_logAPI(id: int) -> requests.Response:
 
 def fetch_log(id: int) -> List[dict]:
     r = _call_logAPI(id)
+
+    if r.status_code == 429:
+        click.echo(f"Rate limited, waiting to retry.")
+        with click.progressbar(range(int(r.headers["Retry-After"]) + 30)) as bar:
+            for _ in bar:
+                time.sleep(1)
+
+        r = _call_logAPI(id)
+
     data = json.loads(r.text)
 
     # Get general information
