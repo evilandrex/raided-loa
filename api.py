@@ -179,6 +179,9 @@ def fetch_log(id: int) -> List[dict]:
     # Classify specs
     specs = classify_class(data)
 
+    # Classify weird
+    weird = classify_weird(data, specs)
+
     # Get the players
     playerData = data["players"]
     players = playerData.keys()
@@ -240,12 +243,16 @@ def classify_class(log: dict) -> dict:
                 else "Rage Hammer"
             )
         elif pClass == "Gunlancer":
-            # Looking for set
-            playerSpecs[name] = (
-                "Combat Readiness"
-                if _check_set("Hallucination") or _check_set("Nightmare")
-                else "Lone Knight"
-            )
+            # First check if they're Princess Maker
+            if float(log["players"][name]["percent"]) > 5:
+                playerSpecs[name] = "Princess Maker"
+            else:
+                # Looking for set
+                playerSpecs[name] = (
+                    "Combat Readiness"
+                    if _check_set("Hallucination") or _check_set("Nightmare")
+                    else "Lone Knight"
+                )
         elif pClass == "Paladin":
             # Checking if this person does okay damage
             playerSpecs[name] = (
@@ -415,3 +422,7 @@ def classify_class(log: dict) -> dict:
             raise ValueError(f"Unknown class: {pClass}")
 
     return playerSpecs
+
+
+def classify_weird(log: dict, specs: dict) -> bool:
+    pass
