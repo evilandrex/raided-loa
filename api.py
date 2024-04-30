@@ -176,6 +176,9 @@ def fetch_log(id: int) -> List[dict]:
     date = data["date"]
     duration = data["duration"]
 
+    # Classify specs
+    specs = classify_class(data)
+
     # Get the players
     playerData = data["players"]
     players = playerData.keys()
@@ -186,7 +189,7 @@ def fetch_log(id: int) -> List[dict]:
             {
                 "id": id,
                 "player": player,
-                "class": playerData[player]["class"],
+                "class": specs[player],
                 "gearScore": playerData[player]["gearScore"],
                 "dps": playerData[player]["dps"],
                 "percent": playerData[player]["percent"],
@@ -198,3 +201,217 @@ def fetch_log(id: int) -> List[dict]:
         ]
 
     return pd.DataFrame(playerEntries)
+
+
+def classify_class(log: dict) -> dict:
+    """Classify each player's spec based on the log"""
+
+    def _check_skillSelfBuff(buffName: str) -> bool:
+        pSelfBuffs = [
+            buffCatalog[buff["buffs"][0]]["name"] for buff in pDetail["skillSelfBuffs"]
+        ]
+        return len([buff for buff in pSelfBuffs if buffName in buff]) > 0
+
+    def _check_set(setName: str) -> bool:
+        return f"set_{setName}" in pDetail["selfBuff"].keys()
+
+    # Grab relevant data
+    buffCatalog = log["data"]["buffCatalog"]
+    skillCatalog = log["data"]["skillCatalog"]
+
+    playerSpecs = {}
+    for name, data in log["players"].items():
+        # Figure out class
+        pClass = data["class"]
+        # Get player details
+        pDetail = log["data"]["players"][name]
+
+        if pClass == "Berserker":
+            # Check if you have the Mayhem self skill buff
+            playerSpecs[name] = (
+                "Mayhem" if _check_skillSelfBuff("Mayhem") else "Berserker's Technique"
+            )
+        elif pClass == "Destroyer":
+            # Look for skill "18030" special "Basic 3 Chain Hits" and does high damage split
+            playerSpecs[name] = (
+                "Gravity Training"
+                if "18030" in pDetail["skillDamage"].keys()
+                and float(pDetail["skillDamage"]["18030"]["percent"]) > 30
+                else "Rage Hammer"
+            )
+        elif pClass == "Gunlancer":
+            # Looking for set
+            playerSpecs[name] = (
+                "Combat Readiness"
+                if _check_set("Hallucination") or _check_set("Nightmare")
+                else "Lone Knight"
+            )
+        elif pClass == "Paladin":
+            # Checking if this person does okay damage
+            playerSpecs[name] = (
+                "Judgment"
+                if float(log["players"][name]["percent"]) > 10
+                else "Blessed Aura"
+            )
+        elif pClass == "Slayer":
+            # Looking for the "Predator" skill self buff
+            playerSpecs[name] = (
+                "Predator" if _check_skillSelfBuff("Predator") else "Punisher"
+            )
+        elif pClass == "Arcanist":
+            # Uses the "Emperor" skill to decide spec
+            playerSpecs[name] = (
+                "Order of the Emperor"
+                if "19282" in pDetail["skillDamage"].keys()
+                else "Empress's Grace"
+            )
+        elif pClass == "Summoner":
+            # Check if "20311" Akir, is in skills and higher than 30% damage
+            playerSpecs[name] = (
+                "Master Summoner"
+                if "20311" in pDetail["skillDamage"].keys()
+                and float(pDetail["skillDamage"]["20311"]["percent"]) > 30
+                else "Communication Overflow"
+            )
+        elif pClass == "Bard":
+            # Check if they're doing okay damage
+            playerSpecs[name] = (
+                "True Courage"
+                if float(log["players"][name]["percent"]) > 10
+                else "Desperate Salvation"
+            )
+        elif pClass == "Sorceress":
+            # Looking for "Igniter" self buff
+            playerSpecs[name] = (
+                "Igniter" if _check_skillSelfBuff("Igniter") else "Reflux"
+            )
+        elif pClass == "Wardancer":
+            # Looking for esoteric skill names
+            playerSpecs[name] = (
+                "Esoteric Skill Enhancement"
+                if any(
+                    [
+                        "Esoteric Skill: " in skillCatalog[id]["name"]
+                        for id in pDetail["skillDamage"].keys()
+                    ]
+                )
+                else "First Intention"
+            )
+        elif pClass == "Scrapper":
+            # Looking for self buff "Tenacity Release"
+            playerSpecs[name] = (
+                "Shock Training"
+                if _check_skillSelfBuff("Tenacity Release")
+                else "Taijutsu"
+            )
+        elif pClass == "Soulfist":
+            # Look for the "24050", World Decimation ability and check if its worth more than 15% of the damage
+            playerSpecs[name] = (
+                "Robust Spirit"
+                if "24050" in pDetail["skillDamage"].keys()
+                and float(pDetail["skillDamage"]["24050"]["percent"]) > 15
+                else "Energy Overflow"
+            )
+        elif pClass == "Glaivier":
+            # Look for the "Pinnacle" skill self buff
+            playerSpecs[name] = (
+                "Pinnacle" if _check_skillSelfBuff("Pinnacle") else "Control"
+            )
+        elif pClass == "Striker":
+            # Looking for the skill ID "39110", Call of the Wind God
+            playerSpecs[name] = (
+                "Esoteric Flurry"
+                if "39110" in pDetail["skillDamage"].keys()
+                else "Deathblow"
+            )
+        elif pClass == "Breaker":
+            # Looking for the skill "47020" Asura Destruction Basic Attack
+            playerSpecs[name] = (
+                "Asura's Path"
+                if "47020" in pDetail["skillDamage"].keys()
+                else "Brawl King Storm"
+            )
+        elif pClass == "Deathblade":
+            # Check if "25402" RE Death Trance exists and does damage
+            playerSpecs[name] = (
+                "Remaining Energy"
+                if "25402" in pDetail["skillDamage"].keys()
+                and float(pDetail["skillDamage"]["25402"]["percent"]) > 10
+                else "Surge"
+            )
+        elif pClass == "Shadowhunter":
+            # Looking for Demonic Impulse self buff
+            playerSpecs[name] = (
+                "Demonic Impulse"
+                if _check_skillSelfBuff("Demonic Impulse")
+                else "Perfect Suppression"
+            )
+        elif pClass == "Reaper":
+            # Checking for the "Lunar Voice" self buff
+            playerSpecs[name] = (
+                "Lunar Voice" if _check_skillSelfBuff("Lunar Voice") else "Hunger"
+            )
+        elif pClass == "Souleater":
+            # Checking for "Soul Snatch" self buff
+            playerSpecs[name] = (
+                "Night's Edge"
+                if _check_skillSelfBuff("Soul Snatch")
+                else "Full Moon Harvester"
+            )
+        elif pClass == "Sharpshooter":
+            # Look for Loyal Companion skill self buff
+            playerSpecs[name] = (
+                "Loyal Companion"
+                if _check_skillSelfBuff("Loyal Companion")
+                else "Death Strike"
+            )
+        elif pClass == "Deadeye":
+            # Look for the "Enhanced Weapon" self skill buff
+            playerSpecs[name] = (
+                "Enhanced Weapon"
+                if _check_skillSelfBuff("Enhanced Weapon")
+                else "Pistoleer"
+            )
+        elif pClass == "Artillerist":
+            # Looking for Barrage skills
+            playerSpecs[name] = (
+                "Barrage Enhancement"
+                if any(
+                    [
+                        "Barrage: " in skillCatalog[id]["name"]
+                        for id in pDetail["skillDamage"].keys()
+                    ]
+                )
+                else "Firepower Enhancement"
+            )
+
+        elif pClass == "Machinist":
+            # Look for Evolutionary Legacy skill self buff
+            playerSpecs[name] = (
+                "Evolutionary Legacy"
+                if _check_skillSelfBuff("Evolutionary Legacy")
+                else "Arthetinean Skill"
+            )
+        elif pClass == "Gunslinger":
+            playerSpecs[name] = (
+                "Peacemaker" if _check_skillSelfBuff("Peacemaker") else "Time to Hunt"
+            )
+        elif pClass == "Artist":
+            # Checks if they're doing okay damage
+            playerSpecs[name] = (
+                "Recurrence"
+                if float(log["players"][name]["percent"]) > 10
+                else "Full Bloom"
+            )
+        elif pClass == "Aeromancer":
+            # Check for the synergy buff "320405" sunshower on the sunshower skill "32041"
+            playerSpecs[name] = (
+                "Wind Fury"
+                if "32041" in pDetail["skillSynergy"].keys()
+                and "603_320405" in pDetail["skillSynergy"]["32041"].keys()
+                else "Drizzle"
+            )
+        else:
+            raise ValueError(f"Unknown class: {pClass}")
+
+    return playerSpecs
