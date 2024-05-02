@@ -135,6 +135,7 @@ def fetch_logIDs(
         try:
             data = json.loads(r.text)
         except json.JSONDecodeError:
+            time.sleep(5)
             r = _call_logsAPI(filter, query_strings)
             data = json.loads(r.text)
 
@@ -189,6 +190,7 @@ def fetch_log(id: int) -> List[dict]:
     try:
         data = json.loads(r.text)
     except json.JSONDecodeError:
+        time.sleep(5)
         r = _call_logAPI(id)
         data = json.loads(r.text)
 
