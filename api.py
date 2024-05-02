@@ -430,7 +430,7 @@ def classify_class(log: dict) -> dict:
             )
         elif pClass == "Gunslinger":
             playerSpecs[name] = (
-                "Peacemaker" if _check_skillSelfBuff("Peacemaker") else "Time to Hunt"
+                "Peacemaker" if "38110" in pDetail["skillDamage"] else "Time to Hunt"
             )
         elif pClass == "Artist":
             # Checks if they're doing okay damage
