@@ -87,7 +87,7 @@ class Filter:
 
 
 @sleep_and_retry
-@limits(calls=250, period=60)
+@limits(calls=250, period=58)
 def _call_logsAPI(
     filter: dict,
     query_strings: dict = {"scope": "arkesia", "order": "recent%20clear"},
@@ -170,7 +170,7 @@ def fetch_logIDs(
 
 
 @sleep_and_retry
-@limits(calls=75, period=60)
+@limits(calls=80, period=58)
 def _call_logAPI(id: int) -> requests.Response:
     """Call the log API with a log ID, returns the log data"""
     return requests.get(f"https://logs.fau.dev/api/log/{id}")
