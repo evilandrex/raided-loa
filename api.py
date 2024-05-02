@@ -295,12 +295,11 @@ def classify_class(log: dict) -> dict:
                 else "Empress's Grace"
             )
         elif pClass == "Summoner":
-            # Check if "20311" Akir, is in skills and higher than 30% damage
+            # Check if "20290" Kelsion, is in skills
             playerSpecs[name] = (
-                "Master Summoner"
-                if "20311" in pDetail["skillDamage"].keys()
-                and float(pDetail["skillDamage"]["20311"]["percent"]) > 30
-                else "Communication Overflow"
+                "Communication Overflow"
+                if "20290" in pDetail["skillDamage"].keys()
+                else "Master Summoner"
             )
         elif pClass == "Bard":
             # Check if they're doing okay damage
