@@ -1,4 +1,5 @@
 ---
+title: Raided Lost Ark
 toc: false
 ---
 
@@ -15,7 +16,7 @@ toc: false
     <li>Play with class colors</li>
     <li>Finish scraping other bosses</li>
     <li>Add info beside filters</li>
-    <li>Add date and branding to plot with a hash of the filters</li>
+    <li>Maybe find a way to encrypt/decrypt filters efficiently</li>
     <li>Make opinionated defaults for each advanced option per boss</li>
     <li>Look into table options for records logs (sorting #1, disable selection)</li>
     <li>Add animation??</li>
@@ -482,6 +483,17 @@ svg
   .attr("font-family", "var(--sans-serif)")
   .text("Build (Logs)");
 
+// Add branding at the bottom right
+svg
+  .append("text")
+  .attr("x", width - margins.right)
+  .attr("y", height - xAxisHeight - margins.bottom - yScale.bandwidth() / 2)
+  .attr("text-anchor", "end")
+  .attr("font-family", "var(--sans-serif)")
+  .attr("font-size", "12px")
+  .attr("fill", "var(--theme-foreground-faintest)")
+  .text(`Raided Lost Ark - ${new Date().toLocaleDateString()}`);
+
 // Prepare tooltip
 const tooltip = d3
   .select("main")
@@ -528,17 +540,6 @@ g.append("rect")
     tooltip.style("left", event.offsetX - 140 + "px");
     tooltip.style("top", event.pageY - 30 + "px");
   });
-
-// Add branding at the bottom right
-svg
-  .append("text")
-  .attr("x", width - 10)
-  .attr("y", height - 10)
-  .attr("text-anchor", "end")
-  .attr("font-family", "var(--sans-serif)")
-  .attr("font-size", "12px")
-  .attr("fill", "var(--theme-foreground)")
-  .text("Raided Lost Ark");
 
 if (selectedBoss) {
   display(svg.node());
