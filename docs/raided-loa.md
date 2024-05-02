@@ -9,7 +9,6 @@
     <li>Scrape Sonavel to fix TTH, Taijutsu, CO classifications</li>
     <li>Scrape Gargadeth to fix CO classifications</li>
     <li>Hide red errors from cells</li>
-    <li>Leverage selections from class data table</li>
     <li>Play with class colors</li>
     <li>Finish scraping other bosses</li>
     <li>Add info beside filters</li>
@@ -346,13 +345,13 @@ const maxCol = showStars ? "Max" : "Upper";
 const xLeft = width > minWidth ? yAxisWidth + margins.left : margins.left;
 const xScale = d3
   .scaleLinear()
-  .domain([0, d3.max(classData.array(maxCol))])
+  .domain([0, d3.max(selectedClasses.map((d) => d[maxCol]))])
   .range([xLeft, width - margins.right]);
 
 // Create y-scale (categorical for each class)
 const yScale = d3
   .scaleBand()
-  .domain(classData.array("Build"))
+  .domain(selectedClasses.map((d) => d.Build))
   .range([margins.top, height - margins.bottom - xAxisHeight])
   .padding(0.2);
 
@@ -363,7 +362,7 @@ const svg = d3
   .attr("height", height)
   .style("background", "transparent");
 
-const g = svg.append("g").selectAll("g").data(classData).join("g");
+const g = svg.append("g").selectAll("g").data(selectedClasses).join("g");
 
 // Add main box
 g.append("rect")
@@ -625,21 +624,27 @@ const classData = data
   .orderby(aq.desc(selectedSort))
   .reify();
 
-display(
-  Inputs.table(classData, {
-    format: {
-      Build: (d) => d.split(" (")[0],
-      Q1: d3.format(".3s"),
-      Median: d3.format(".3s"),
-      Mean: d3.format(".3s"),
-      Q3: d3.format(".3s"),
-      IQR: d3.format(".3s"),
-      Min: d3.format(".3s"),
-      Max: d3.format(".3s"),
-      Lower: d3.format(".3s"),
-      Upper: d3.format(".3s"),
-    },
-    layout: "auto",
-  })
-);
+const classTable = Inputs.table(classData, {
+  format: {
+    Build: (d) => d.split(" (")[0],
+    Q1: d3.format(".3s"),
+    Median: d3.format(".3s"),
+    Mean: d3.format(".3s"),
+    Q3: d3.format(".3s"),
+    IQR: d3.format(".3s"),
+    Min: d3.format(".3s"),
+    Max: d3.format(".3s"),
+    Lower: d3.format(".3s"),
+    Upper: d3.format(".3s"),
+  },
+  layout: "auto",
+});
+
+const selectedClasses = Generators.input(classTable);
+
+display(classTable);
+```
+
+```js
+display(selectedClasses);
 ```
