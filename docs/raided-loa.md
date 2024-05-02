@@ -60,7 +60,7 @@
     </div>
 </div>
 
-```js
+```js boss selector
 const guardians = ["Sonavel", "Gargadeth", "Veskal"];
 
 const raids = {
@@ -79,7 +79,7 @@ const bossSelect = Inputs.select(bosses, {
 const selectedBoss = Generators.input(bossSelect);
 ```
 
-```js
+```js difficulty radio
 const reqDiff =
   guardians.includes(selectedBoss) ||
   selectedBoss == "Kakul Saydon" ||
@@ -106,7 +106,7 @@ const difficultyRadio = Inputs.radio(["Normal", "Hard"], {
 const difficulty = Generators.input(difficultyRadio);
 ```
 
-```js
+```js gates radio
 const gates = Object.keys(raids).includes(selectedBoss)
   ? raids[selectedBoss]
   : ["No Gates"];
@@ -118,7 +118,7 @@ const gateRadio = Inputs.radio(gates, {
 const gate = Generators.input(gateRadio);
 ```
 
-```js
+```js sort selector
 const sortSelect = Inputs.select(
   new Map([
     ["Median (middle performance)", "median"],
@@ -133,7 +133,7 @@ const sortSelect = Inputs.select(
 const selectedSort = Generators.input(sortSelect);
 ```
 
-```js
+```js patch selector
 const patchSelect = Inputs.select(
   new Map([
     ["April 2024 - Mage Balance (Current)", [`2024-04-17`, Date.now()]],
@@ -151,7 +151,7 @@ const patchSelect = Inputs.select(
 const selectedPatch = Generators.input(patchSelect);
 ```
 
-```js
+```js date selectors
 const dateStartSelect = Inputs.date({
   label: "Start Date",
   value: selectedPatch[0],
@@ -165,7 +165,7 @@ const dateEndSelect = Inputs.date({
 const dateEnd = Generators.input(dateEndSelect);
 ```
 
-```js
+```js ilevel ranges
 const iLevelMinRange = Inputs.range([1580, 1675], {
   value: 1580,
   step: 1,
@@ -179,7 +179,7 @@ const iLevelMaxRange = Inputs.range([1580, 1675], {
 const iLevelMax = Generators.input(iLevelMaxRange);
 ```
 
-```js
+```js duration ranges
 const durationMinRange = Inputs.range([0, 3600], {
   value: 90,
   step: 1,
@@ -193,7 +193,7 @@ const durationMaxRange = Inputs.range([0, 3600], {
 const durationMax = Generators.input(durationMaxRange);
 ```
 
-```js
+```js weird toggle
 const filterWeirdToggle = Inputs.toggle({
   label: "Filter Weird",
   value: true,
@@ -201,7 +201,7 @@ const filterWeirdToggle = Inputs.toggle({
 const filterWeird = Generators.input(filterWeirdToggle);
 ```
 
-```js
+```js dead toggle
 const filterDeadToggle = Inputs.toggle({
   label: "Filter Dead",
   value: true,
@@ -211,7 +211,7 @@ const filterDead = Generators.input(filterDeadToggle);
 
 ## Aggregate Data
 
-```js
+```js get data
 const supportClasses = [
   "Blessed Aura",
   "Full Bloom",
@@ -255,7 +255,7 @@ data = data
   .reify();
 ```
 
-```js
+```js plot dimensions
 const width = Generators.width(document.querySelector("main"));
 const plotHeight = 850;
 const margins = { top: 10, right: 10, bottom: 10, left: 10 };
@@ -264,7 +264,7 @@ const yAxisWidth = 250;
 const height = plotHeight + margins.top + margins.bottom + xAxisHeight;
 ```
 
-```js
+```js class colors
 const classSpecs = [
   ["Mayhem", "Berserker's Technique"],
   ["Rage Hammer", "Gravity Training"],
@@ -334,7 +334,7 @@ const classColors = new Map(
 );
 ```
 
-```js
+```js boxplot
 // Create x-scale (based on dps)
 const xScale = d3
   .scaleLinear()
@@ -512,7 +512,7 @@ display(svg.node());
 
 ## Record Logs
 
-```js
+```js record logs table
 // Unnest class specs
 const allSpecs = classSpecs
   .flatMap((spec) => spec)
@@ -581,7 +581,7 @@ display(
 
 ## Data Table
 
-```js
+```js class data table
 const classData = data
   .groupby("class")
   .rollup({
