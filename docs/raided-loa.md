@@ -14,7 +14,6 @@
     <li>Format data table numbers for readability</li>
     <li>Better support mobile screen</li>
     <li>Mouseover highlight spans into the names</li>
-    <li>Make record table links open in new tab</li>
     <li>Fix tooltip for long build names</li>
     <li>Play with class colors</li>
     <li>Finish scraping other bosses</li>
@@ -566,9 +565,9 @@ const topLogsTable = aq.table(topLogs).rename({
 
 function idToLog(d) {
   if (d[0]) {
-    return htl.html`<a href="${logLinkStub}${d[0]}">${d3.format(".3s")(
-      d[1]
-    )}</a>`;
+    return htl.html`<a href="${logLinkStub}${d[0]}" target="_blank">${d3.format(
+      ".3s"
+    )(d[1])}</a>`;
   } else {
     return "No log";
   }
