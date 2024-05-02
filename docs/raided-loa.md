@@ -9,9 +9,7 @@
     <li>Scrape Sonavel to fix TTH, Taijutsu, CO classifications</li>
     <li>Scrape Gargadeth to fix CO classifications</li>
     <li>Hide red errors from cells</li>
-    <li>See if we can rename class data table columns to display</li>
     <li>Leverage selections from class data table</li>
-    <li>Format data table numbers for readability</li>
     <li>Play with class colors</li>
     <li>Finish scraping other bosses</li>
     <li>Add info beside filters</li>
@@ -19,6 +17,7 @@
     <li>Support light and dark mode</li>
     <li>Make opinionated defaults for each advanced option per boss</li>
     <li>Look into table options for records logs (sorting #1, disable selection)</li>
+    <li>Add animation??</li>
   </p>
   
 </div>
@@ -119,10 +118,10 @@ const gate = Generators.input(gateRadio);
 ```js sort selector
 const sortSelect = Inputs.select(
   new Map([
-    ["Median (middle performance)", "median"],
-    ["Upper (reasonable ceiling)", "upper"],
-    ["Lower (reasonable floor)", "lower"],
-    ["Max (the best!)", "max"],
+    ["Median (middle performance)", "Median"],
+    ["Upper (reasonable ceiling)", "Upper"],
+    ["Lower (reasonable floor)", "Lower"],
+    ["Max (the best!)", "Max"],
   ]),
   {
     label: "",
@@ -343,7 +342,7 @@ const classColors = new Map(
 
 ```js boxplot
 // Create x-scale (based on dps)
-const maxCol = showStars ? "max" : "upper";
+const maxCol = showStars ? "Max" : "Upper";
 const xLeft = width > minWidth ? yAxisWidth + margins.left : margins.left;
 const xScale = d3
   .scaleLinear()
@@ -353,7 +352,7 @@ const xScale = d3
 // Create y-scale (categorical for each class)
 const yScale = d3
   .scaleBand()
-  .domain(classData.array("class"))
+  .domain(classData.array("Build"))
   .range([margins.top, height - margins.bottom - xAxisHeight])
   .padding(0.2);
 
@@ -368,56 +367,56 @@ const g = svg.append("g").selectAll("g").data(classData).join("g");
 
 // Add main box
 g.append("rect")
-  .attr("x", (d) => xScale(d.q1))
-  .attr("y", (d) => yScale(d.class))
-  .attr("width", (d) => xScale(d.q3) - xScale(d.q1))
+  .attr("x", (d) => xScale(d.Q1))
+  .attr("y", (d) => yScale(d.Build))
+  .attr("width", (d) => xScale(d.Q3) - xScale(d.Q1))
   .attr("height", yScale.bandwidth())
-  .attr("fill", (d) => classColors.get(d.class.split(" (")[0]));
+  .attr("fill", (d) => classColors.get(d.Build.split(" (")[0]));
 
 // Add median line
 g.append("line")
-  .attr("x1", (d) => xScale(d.median))
-  .attr("x2", (d) => xScale(d.median))
-  .attr("y1", (d) => yScale(d.class))
-  .attr("y2", (d) => yScale(d.class) + yScale.bandwidth())
+  .attr("x1", (d) => xScale(d.Median))
+  .attr("x2", (d) => xScale(d.Median))
+  .attr("y1", (d) => yScale(d.Build))
+  .attr("y2", (d) => yScale(d.Build) + yScale.bandwidth())
   .attr("stroke", "white");
 
 // Add lower whisker
 g.append("line")
-  .attr("x1", (d) => xScale(d.lower))
-  .attr("x2", (d) => xScale(d.q1))
-  .attr("y1", (d) => yScale(d.class) + yScale.bandwidth() / 2)
-  .attr("y2", (d) => yScale(d.class) + yScale.bandwidth() / 2)
+  .attr("x1", (d) => xScale(d.Lower))
+  .attr("x2", (d) => xScale(d.Q1))
+  .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
+  .attr("y2", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
   .attr("stroke", "white");
 
 // Add whisker cap
 g.append("line")
-  .attr("x1", (d) => xScale(d.lower))
-  .attr("x2", (d) => xScale(d.lower))
-  .attr("y1", (d) => yScale(d.class) + yScale.bandwidth() / 4)
-  .attr("y2", (d) => yScale(d.class) + (yScale.bandwidth() * 3) / 4)
+  .attr("x1", (d) => xScale(d.Lower))
+  .attr("x2", (d) => xScale(d.Lower))
+  .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 4)
+  .attr("y2", (d) => yScale(d.Build) + (yScale.bandwidth() * 3) / 4)
   .attr("stroke", "white");
 
 // Add upper whisker
 g.append("line")
-  .attr("x1", (d) => xScale(d.q3))
-  .attr("x2", (d) => xScale(d.upper))
-  .attr("y1", (d) => yScale(d.class) + yScale.bandwidth() / 2)
-  .attr("y2", (d) => yScale(d.class) + yScale.bandwidth() / 2)
+  .attr("x1", (d) => xScale(d.Q3))
+  .attr("x2", (d) => xScale(d.Upper))
+  .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
+  .attr("y2", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
   .attr("stroke", "white");
 
 // Add whisker cap
 g.append("line")
-  .attr("x1", (d) => xScale(d.upper))
-  .attr("x2", (d) => xScale(d.upper))
-  .attr("y1", (d) => yScale(d.class) + yScale.bandwidth() / 4)
-  .attr("y2", (d) => yScale(d.class) + (yScale.bandwidth() * 3) / 4)
+  .attr("x1", (d) => xScale(d.Upper))
+  .attr("x2", (d) => xScale(d.Upper))
+  .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 4)
+  .attr("y2", (d) => yScale(d.Build) + (yScale.bandwidth() * 3) / 4)
   .attr("stroke", "white");
 
 // Add a star for the best
 g.append("text")
-  .attr("x", (d) => xScale(d.max))
-  .attr("y", (d) => yScale(d.class) + yScale.bandwidth() / 2)
+  .attr("x", (d) => xScale(d.Max))
+  .attr("y", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
   .attr("dy", "0.35em")
   .attr("text-anchor", "middle")
   .attr("fill", "gold")
@@ -488,23 +487,23 @@ const tooltip = d3
 g.append("rect")
   .attr("class", "rowMouseBox")
   .attr("x", (d) => xScale.range()[0] - yAxisWidth + 25)
-  .attr("y", (d) => yScale(d.class))
+  .attr("y", (d) => yScale(d.Build))
   .attr("width", (d) => xScale.range()[1] - xScale.range()[0] + yAxisWidth - 25)
   .attr("height", yScale.bandwidth())
   .attr("fill", "transparent")
   .on("mouseover", (event, d) => {
     tooltip.style("opacity", 1).html(`
       <div class="card" style="padding: 7px;">
-        <div>${d.class.split(" (")[0]}</div>
-        <div>${d.class.split(" (")[1].replace(")", "")} logs</div>
+        <div>${d.Build.split(" (")[0]}</div>
+        <div>${d.Build.split(" (")[1].replace(")", "")} logs</div>
         <br/>
-        <div>Worst: ${d3.format(".3s")(d.min)}</div>
-        <div>Floor: ${d3.format(".3s")(d.lower)}</div>
-        <div>Q1: ${d3.format(".3s")(d.q1)}</div>
-        <div>Median: ${d3.format(".3s")(d.median)}</div>
-        <div>Q3: ${d3.format(".3s")(d.q3)}</div>
-        <div>Ceiling: ${d3.format(".3s")(d.upper)}</div>
-        <div>Best: ${d3.format(".3s")(d.max)}</div>
+        <div>Worst: ${d3.format(".3s")(d.Min)}</div>
+        <div>Floor: ${d3.format(".3s")(d.Lower)}</div>
+        <div>Q1: ${d3.format(".3s")(d.Q1)}</div>
+        <div>Median: ${d3.format(".3s")(d.Median)}</div>
+        <div>Q3: ${d3.format(".3s")(d.Q3)}</div>
+        <div>Ceiling: ${d3.format(".3s")(d.Upper)}</div>
+        <div>Best: ${d3.format(".3s")(d.Max)}</div>
       </div>
     `);
     // Darken row
@@ -594,36 +593,53 @@ display(
 );
 ```
 
-## Data Table
+## Class Data Table
 
 ```js class data table
 const classData = data
   .groupby("class")
   .rollup({
-    nLogs: aq.op.count(),
-    q1: aq.op.quantile("dps", 0.25),
-    median: aq.op.median("dps"),
-    mean: aq.op.mean("dps"),
-    q3: aq.op.quantile("dps", 0.75),
-    min: aq.op.min("dps"),
-    max: aq.op.max("dps"),
+    Logs: aq.op.count(),
+    Q1: aq.op.quantile("dps", 0.25),
+    Median: aq.op.median("dps"),
+    Mean: aq.op.mean("dps"),
+    Q3: aq.op.quantile("dps", 0.75),
+    Min: aq.op.min("dps"),
+    Max: aq.op.max("dps"),
   })
   .derive({
-    iqr: (d) => d.q3 - d.q1,
+    IQR: (d) => d.Q3 - d.Q1,
   })
   .derive({
-    lower: (d) => d.q1 - 1.5 * d.iqr,
-    upper: (d) => d.q3 + 1.5 * d.iqr,
+    Lower: (d) => d.Q1 - 1.5 * d.IQR,
+    Upper: (d) => d.Q3 + 1.5 * d.IQR,
   })
   .derive({
-    lower: (d) => Math.max(d.min, d.lower),
-    upper: (d) => Math.min(d.max, d.upper),
+    Lower: (d) => Math.max(d.Min, d.Lower),
+    Upper: (d) => Math.min(d.Max, d.Upper),
   })
   .derive({
-    class: (d) => d.class + ` (${d.nLogs})`,
+    class: (d) => d.class + ` (${d.Logs})`,
   })
+  .rename({ class: "Build" })
   .orderby(aq.desc(selectedSort))
   .reify();
 
-display(Inputs.table(classData));
+display(
+  Inputs.table(classData, {
+    format: {
+      Build: (d) => d.split(" (")[0],
+      Q1: d3.format(".3s"),
+      Median: d3.format(".3s"),
+      Mean: d3.format(".3s"),
+      Q3: d3.format(".3s"),
+      IQR: d3.format(".3s"),
+      Min: d3.format(".3s"),
+      Max: d3.format(".3s"),
+      Lower: d3.format(".3s"),
+      Upper: d3.format(".3s"),
+    },
+    layout: "auto",
+  })
+);
 ```
