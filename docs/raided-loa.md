@@ -12,7 +12,6 @@
     <li>See if we can rename class data table columns to display</li>
     <li>Leverage selections from class data table</li>
     <li>Format data table numbers for readability</li>
-    <li>Better support mobile screen</li>
     <li>Play with class colors</li>
     <li>Finish scraping other bosses</li>
     <li>Add info beside filters</li>
@@ -268,6 +267,7 @@ const plotHeight = 850;
 const margins = { top: 10, right: 10, bottom: 10, left: 10 };
 const xAxisHeight = 50;
 const yAxisWidth = 250;
+const minWidth = 550;
 const height = plotHeight + margins.top + margins.bottom + xAxisHeight;
 ```
 
@@ -344,10 +344,11 @@ const classColors = new Map(
 ```js boxplot
 // Create x-scale (based on dps)
 const maxCol = showStars ? "max" : "upper";
+const xLeft = width > minWidth ? yAxisWidth + margins.left : margins.left;
 const xScale = d3
   .scaleLinear()
   .domain([0, d3.max(classData.array(maxCol))])
-  .range([margins.left + yAxisWidth, width - margins.right]);
+  .range([xLeft, width - margins.right]);
 
 // Create y-scale (categorical for each class)
 const yScale = d3
@@ -437,9 +438,9 @@ svg
   .append("text")
   .attr(
     "transform",
-    `translate(${(width - yAxisWidth) / 2 + yAxisWidth}, ${
-      height - margins.bottom - xAxisHeight / 2
-    })`
+    `translate(${
+      width > minWidth ? (width - yAxisWidth) / 2 + yAxisWidth : width / 2
+    }, ${height - margins.bottom - xAxisHeight / 2})`
   )
   .attr("dy", "1em")
   .attr("text-anchor", "middle")
@@ -451,14 +452,21 @@ svg
 const yAxis = d3.axisLeft(yScale);
 svg
   .append("g")
+  .attr("visibility", width > minWidth ? "visible" : "hidden")
   .attr("transform", `translate(${margins.left + yAxisWidth}, 0)`)
   .call(yAxis)
   .selectAll("text")
-  .attr("font-size", "14px");
+  .attr("font-size", "14px")
+  .attr("visibility", "visible")
+  .attr("opacity", width > minWidth ? 1 : 0.25)
+  .attr("text-anchor", width > minWidth ? "end" : "start")
+  .attr("transform", width > minWidth ? "" : `translate(${-yAxisWidth}, 0)`)
+  .text((d) => (width > minWidth ? d : d.split(" (")[0]));
 
 // Add y axis label
 svg
   .append("text")
+  .attr("visibility", width > minWidth ? "visible" : "hidden")
   .attr(
     "transform",
     `translate(${margins.left}, ${plotHeight / 2}) rotate(-90)`
