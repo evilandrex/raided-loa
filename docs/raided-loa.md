@@ -2,7 +2,7 @@
 toc: false
 ---
 
-# Raided Lost Ark
+<h1>Raided Lost Ark</h1>
 
 <div class="warning">
   <p>This is a work in progress!</p>
@@ -16,12 +16,10 @@ toc: false
     <li>Finish scraping other bosses</li>
     <li>Add info beside filters</li>
     <li>Add date and branding to plot with a hash of the filters</li>
-    <li>Support light and dark mode</li>
     <li>Make opinionated defaults for each advanced option per boss</li>
     <li>Look into table options for records logs (sorting #1, disable selection)</li>
     <li>Add animation??</li>
   </p>
-  
 </div>
 
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
@@ -393,7 +391,7 @@ g.append("line")
   .attr("x2", (d) => xScale(d.Q1))
   .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
   .attr("y2", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
-  .attr("stroke", "white");
+  .attr("stroke", "var(--theme-foreground)");
 
 // Add whisker cap
 g.append("line")
@@ -401,7 +399,7 @@ g.append("line")
   .attr("x2", (d) => xScale(d.Lower))
   .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 4)
   .attr("y2", (d) => yScale(d.Build) + (yScale.bandwidth() * 3) / 4)
-  .attr("stroke", "white");
+  .attr("stroke", "var(--theme-foreground)");
 
 // Add upper whisker
 g.append("line")
@@ -409,7 +407,7 @@ g.append("line")
   .attr("x2", (d) => xScale(d.Upper))
   .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
   .attr("y2", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
-  .attr("stroke", "white");
+  .attr("stroke", "var(--theme-foreground)");
 
 // Add whisker cap
 g.append("line")
@@ -417,7 +415,7 @@ g.append("line")
   .attr("x2", (d) => xScale(d.Upper))
   .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 4)
   .attr("y2", (d) => yScale(d.Build) + (yScale.bandwidth() * 3) / 4)
-  .attr("stroke", "white");
+  .attr("stroke", "var(--theme-foreground)");
 
 // Add a star for the best
 g.append("text")
@@ -425,7 +423,7 @@ g.append("text")
   .attr("y", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
   .attr("dy", "0.35em")
   .attr("text-anchor", "middle")
-  .attr("fill", "gold")
+  .attr("fill", "var(--theme-foreground-focus)")
   .attr("font-size", "20px")
   .attr("opacity", "0.5")
   .attr("visibility", (d) => (showStars ? "visible" : "hidden"))
@@ -450,7 +448,8 @@ svg
   .attr("dy", "1em")
   .attr("text-anchor", "middle")
   .attr("font-size", "16px")
-  .attr("fill", "white")
+  .attr("font-family", "var(--sans-serif)")
+  .attr("fill", "var(--theme-foreground)")
   .text("DPS (millions)");
 
 // Create y-axis
@@ -479,7 +478,8 @@ svg
   .attr("dy", "1em")
   .attr("text-anchor", "middle")
   .attr("font-size", "16px")
-  .attr("fill", "white")
+  .attr("fill", "var(--theme-foreground)")
+  .attr("font-family", "var(--sans-serif)")
   .text("Build (Logs)");
 
 // Prepare tooltip
@@ -513,7 +513,9 @@ g.append("rect")
       </div>
     `);
     // Darken row
-    d3.select(event.target).attr("fill", "rgba(255, 255, 255, 0.1)");
+    d3.select(event.target)
+      .attr("fill", "var(--theme-foreground-muted)")
+      .attr("opacity", "0.25");
   })
   .on("mouseout", () => {
     tooltip.style("opacity", 0);
@@ -526,6 +528,17 @@ g.append("rect")
     tooltip.style("left", event.offsetX - 140 + "px");
     tooltip.style("top", event.pageY - 30 + "px");
   });
+
+// Add branding at the bottom right
+svg
+  .append("text")
+  .attr("x", width - 10)
+  .attr("y", height - 10)
+  .attr("text-anchor", "end")
+  .attr("font-family", "var(--sans-serif)")
+  .attr("font-size", "12px")
+  .attr("fill", "var(--theme-foreground)")
+  .text("Raided Lost Ark");
 
 if (selectedBoss) {
   display(svg.node());
