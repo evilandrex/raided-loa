@@ -13,7 +13,6 @@
     <li>Leverage selections from class data table</li>
     <li>Format data table numbers for readability</li>
     <li>Better support mobile screen</li>
-    <li>Mouseover highlight spans into the names</li>
     <li>Play with class colors</li>
     <li>Finish scraping other bosses</li>
     <li>Add info beside filters</li>
@@ -480,9 +479,9 @@ const tooltip = d3
 // Add invisible box to support mouse over
 g.append("rect")
   .attr("class", "rowMouseBox")
-  .attr("x", (d) => xScale.range()[0])
+  .attr("x", (d) => xScale.range()[0] - yAxisWidth + 25)
   .attr("y", (d) => yScale(d.class))
-  .attr("width", (d) => xScale.range()[1] - xScale.range()[0])
+  .attr("width", (d) => xScale.range()[1] - xScale.range()[0] + yAxisWidth - 25)
   .attr("height", yScale.bandwidth())
   .attr("fill", "transparent")
   .on("mouseover", (event, d) => {
