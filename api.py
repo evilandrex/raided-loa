@@ -327,11 +327,18 @@ def classify_class(log: dict) -> dict:
                 else "First Intention"
             )
         elif pClass == "Scrapper":
-            # Looking for self buff "Tenacity Release"
+            # This one is weird where the Shock Training buff is ID "500224" but it doesn't have a name
             playerSpecs[name] = (
                 "Shock Training"
-                if _check_skillSelfBuff("Tenacity Release")
-                else "Taijutsu"
+                if len(
+                    [
+                        buff
+                        for buff in pDetail["skillSelfBuffs"]
+                        if buff["buffs"][0] == "500224"
+                    ]
+                )
+                > 0
+                else "Ultimate Skill: Taijutsu"
             )
         elif pClass == "Soulfist":
             # Look for the "24050", World Decimation ability and check if its worth more than 15% of the damage
