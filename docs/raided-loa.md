@@ -5,16 +5,24 @@
   <p>
     TODO:
     <li>Add toggle to show best stars on plot</li>
+    <li>Make best stars clickable as links</li>
+    <li>Look into better display of difficulty/gate selectors</li>
     <li>Scrape Sonavel to fix TTH, Taijutsu, CO classifications</li>
     <li>Scrape Gargadeth to fix CO classifications</li>
     <li>Hide red errors from cells</li>
     <li>See if we can rename class data table columns to display</li>
     <li>Leverage selections from class data table</li>
+    <li>Format data table numbers for readability</li>
+    <li>Better support mobile screen</li>
+    <li>Mouseover highlight spans into the names</li>
+    <li>Make record table links open in new tab</li>
+    <li>Fix tooltip for long build names</li>
     <li>Play with class colors</li>
     <li>Finish scraping other bosses</li>
     <li>Add info beside filters</li>
     <li>Add date and branding to plot with a hash of the filters</li>
     <li>Support light and dark mode</li>
+    <li>Make opinionated defaults for each advanced option per boss</li>
     <li>Look into table options for records logs (sorting #1, disable selection)</li>
   </p>
   
@@ -495,7 +503,6 @@ g.append("rect")
     g.selectAll(".rowMouseBox").attr("fill", "transparent");
   })
   .on("mousemove", (event) => {
-    console.log(event);
     tooltip.style("left", event.offsetX - 140 + "px");
     tooltip.style("top", event.pageY - 40 + "px");
   });
