@@ -4,7 +4,6 @@
   <p>This is a work in progress!</p>
   <p>
     TODO:
-    <li>Add toggle to show best stars on plot</li>
     <li>Make best stars clickable as links</li>
     <li>Look into better display of difficulty/gate selectors</li>
     <li>Scrape Sonavel to fix TTH, Taijutsu, CO classifications</li>
@@ -56,6 +55,9 @@
         ${filterDeadToggle}
         ${filterWeirdToggle}
         <sub>Princcess GL, weird support count, weird player count</sub>
+        <br/>
+        <br/>
+        ${starToggle}
       </details>
     </div>
 </div>
@@ -209,6 +211,14 @@ const filterDeadToggle = Inputs.toggle({
 const filterDead = Generators.input(filterDeadToggle);
 ```
 
+```js star toggle
+const starToggle = Inputs.toggle({
+  label: "Show Best Logs",
+  value: true,
+});
+const showStars = Generators.input(starToggle);
+```
+
 ## Aggregate Data
 
 ```js get data
@@ -336,9 +346,10 @@ const classColors = new Map(
 
 ```js boxplot
 // Create x-scale (based on dps)
+const maxCol = showStars ? "max" : "upper";
 const xScale = d3
   .scaleLinear()
-  .domain([0, d3.max(classData.array("max"))])
+  .domain([0, d3.max(classData.array(maxCol))])
   .range([margins.left + yAxisWidth, width - margins.right]);
 
 // Create y-scale (categorical for each class)
@@ -347,9 +358,7 @@ const yScale = d3
   .domain(classData.array("class"))
   .range([margins.top, height - margins.bottom - xAxisHeight])
   .padding(0.2);
-```
 
-```js
 // Create SVG container
 const svg = d3
   .create("svg")
@@ -416,6 +425,7 @@ g.append("text")
   .attr("fill", "gold")
   .attr("font-size", "20px")
   .attr("opacity", "0.5")
+  .attr("visibility", (d) => (showStars ? "visible" : "hidden"))
   .text("★");
 
 // Create x-axis
