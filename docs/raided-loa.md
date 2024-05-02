@@ -1,3 +1,7 @@
+---
+toc: false
+---
+
 # Raided Lost Ark
 
 <div class="warning">
@@ -8,7 +12,6 @@
     <li>Look into better display of difficulty/gate selectors</li>
     <li>Scrape Sonavel to fix TTH, Taijutsu, CO classifications</li>
     <li>Scrape Gargadeth to fix CO classifications</li>
-    <li>Hide red errors from cells</li>
     <li>Play with class colors</li>
     <li>Finish scraping other bosses</li>
     <li>Add info beside filters</li>
@@ -213,7 +216,7 @@ const starToggle = Inputs.toggle({
 const showStars = Generators.input(starToggle);
 ```
 
-## Aggregate Data
+## ${selectedBoss ? "Aggregate Data" : ""}
 
 ```js get data
 const supportClasses = [
@@ -226,7 +229,9 @@ let url =
   "https://raw.githubusercontent.com/evilandrex/raided-loa-scraper/main/data/";
 
 // Check if boss is a guardian
-if (guardians.includes(selectedBoss)) {
+if (selectedBoss == null) {
+  url += "empty.csv";
+} else if (guardians.includes(selectedBoss)) {
   url += `${selectedBoss}.csv`;
 } else {
   url += `${selectedBoss}_G${gate}_${difficulty}.csv`;
@@ -241,22 +246,24 @@ let data = await aq.loadCSV(url, {
   },
 });
 
-// Filter based on inputs
-data = data
-  .filter(aq.escape((d) => d.date >= dateStart && d.date <= dateEnd))
-  .filter(aq.escape((d) => (filterWeird ? d.weird === false : true)))
-  .filter(aq.escape((d) => (filterDead ? d.dead === false : true)))
-  .filter(
-    aq.escape((d) => d.gearScore >= iLevelMin && d.gearScore <= iLevelMax)
-  )
-  .filter(
-    aq.escape(
-      (d) =>
-        d.duration >= durationMin * 1000 && d.duration <= durationMax * 1000
+if (selectedBoss != null) {
+  // Filter based on inputs
+  data = data
+    .filter(aq.escape((d) => d.date >= dateStart && d.date <= dateEnd))
+    .filter(aq.escape((d) => (filterWeird ? d.weird === false : true)))
+    .filter(aq.escape((d) => (filterDead ? d.dead === false : true)))
+    .filter(
+      aq.escape((d) => d.gearScore >= iLevelMin && d.gearScore <= iLevelMax)
     )
-  )
-  .filter(aq.escape((d) => !aq.op.includes(supportClasses, d.class)))
-  .reify();
+    .filter(
+      aq.escape(
+        (d) =>
+          d.duration >= durationMin * 1000 && d.duration <= durationMax * 1000
+      )
+    )
+    .filter(aq.escape((d) => !aq.op.includes(supportClasses, d.class)))
+    .reify();
+}
 ```
 
 ```js plot dimensions
@@ -520,10 +527,67 @@ g.append("rect")
     tooltip.style("top", event.pageY - 30 + "px");
   });
 
-display(svg.node());
+if (selectedBoss) {
+  display(svg.node());
+}
 ```
 
-## Record Logs
+## ${selectedBoss ? "Class Data Table" : ""}
+
+```js class data table
+const classData = data
+  .groupby("class")
+  .rollup({
+    Logs: aq.op.count(),
+    Q1: aq.op.quantile("dps", 0.25),
+    Median: aq.op.median("dps"),
+    Mean: aq.op.mean("dps"),
+    Q3: aq.op.quantile("dps", 0.75),
+    Min: aq.op.min("dps"),
+    Max: aq.op.max("dps"),
+  })
+  .derive({
+    IQR: (d) => d.Q3 - d.Q1,
+  })
+  .derive({
+    Lower: (d) => d.Q1 - 1.5 * d.IQR,
+    Upper: (d) => d.Q3 + 1.5 * d.IQR,
+  })
+  .derive({
+    Lower: (d) => Math.max(d.Min, d.Lower),
+    Upper: (d) => Math.min(d.Max, d.Upper),
+  })
+  .derive({
+    class: (d) => d.class + ` (${d.Logs})`,
+  })
+  .rename({ class: "Build" })
+  .orderby(aq.desc(selectedSort))
+  .reify();
+
+const classTable = Inputs.table(classData, {
+  format: {
+    Build: (d) => d.split(" (")[0],
+    Q1: d3.format(".3s"),
+    Median: d3.format(".3s"),
+    Mean: d3.format(".3s"),
+    Q3: d3.format(".3s"),
+    IQR: d3.format(".3s"),
+    Min: d3.format(".3s"),
+    Max: d3.format(".3s"),
+    Lower: d3.format(".3s"),
+    Upper: d3.format(".3s"),
+  },
+  layout: "auto",
+});
+
+const selectedClasses = Generators.input(classTable);
+
+if (selectedBoss) {
+  display(classTable);
+}
+```
+
+## ${selectedBoss ? "Record Logs" : ""}
 
 ```js record logs table
 // Unnest class specs
@@ -577,74 +641,19 @@ function idToLog(d) {
   }
 }
 
-display(
-  Inputs.table(topLogsTable, {
-    format: {
-      "#1": idToLog,
-      "#2": idToLog,
-      "#3": idToLog,
-      "#4": idToLog,
-      "#5": idToLog,
-    },
-    sort: "Build",
-    layout: "auto",
-  })
-);
-```
-
-## Class Data Table
-
-```js class data table
-const classData = data
-  .groupby("class")
-  .rollup({
-    Logs: aq.op.count(),
-    Q1: aq.op.quantile("dps", 0.25),
-    Median: aq.op.median("dps"),
-    Mean: aq.op.mean("dps"),
-    Q3: aq.op.quantile("dps", 0.75),
-    Min: aq.op.min("dps"),
-    Max: aq.op.max("dps"),
-  })
-  .derive({
-    IQR: (d) => d.Q3 - d.Q1,
-  })
-  .derive({
-    Lower: (d) => d.Q1 - 1.5 * d.IQR,
-    Upper: (d) => d.Q3 + 1.5 * d.IQR,
-  })
-  .derive({
-    Lower: (d) => Math.max(d.Min, d.Lower),
-    Upper: (d) => Math.min(d.Max, d.Upper),
-  })
-  .derive({
-    class: (d) => d.class + ` (${d.Logs})`,
-  })
-  .rename({ class: "Build" })
-  .orderby(aq.desc(selectedSort))
-  .reify();
-
-const classTable = Inputs.table(classData, {
-  format: {
-    Build: (d) => d.split(" (")[0],
-    Q1: d3.format(".3s"),
-    Median: d3.format(".3s"),
-    Mean: d3.format(".3s"),
-    Q3: d3.format(".3s"),
-    IQR: d3.format(".3s"),
-    Min: d3.format(".3s"),
-    Max: d3.format(".3s"),
-    Lower: d3.format(".3s"),
-    Upper: d3.format(".3s"),
-  },
-  layout: "auto",
-});
-
-const selectedClasses = Generators.input(classTable);
-
-display(classTable);
-```
-
-```js
-display(selectedClasses);
+if (selectedBoss) {
+  display(
+    Inputs.table(topLogsTable, {
+      format: {
+        "#1": idToLog,
+        "#2": idToLog,
+        "#3": idToLog,
+        "#4": idToLog,
+        "#5": idToLog,
+      },
+      sort: "Build",
+      layout: "auto",
+    })
+  );
+}
 ```
