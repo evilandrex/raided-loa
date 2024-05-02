@@ -14,7 +14,6 @@
     <li>Format data table numbers for readability</li>
     <li>Better support mobile screen</li>
     <li>Mouseover highlight spans into the names</li>
-    <li>Fix tooltip for long build names</li>
     <li>Play with class colors</li>
     <li>Finish scraping other bosses</li>
     <li>Add info beside filters</li>
@@ -513,7 +512,7 @@ g.append("rect")
   })
   .on("mousemove", (event) => {
     tooltip.style("left", event.offsetX - 140 + "px");
-    tooltip.style("top", event.pageY - 40 + "px");
+    tooltip.style("top", event.pageY - 30 + "px");
   });
 
 display(svg.node());
