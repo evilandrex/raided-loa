@@ -20,7 +20,7 @@ export default {
   head: '<link rel="icon" href="observable.png" type="image/png" sizes="32x32">',
 
   // Some additional configuration options and their defaults:
-  theme: ["parchment", "coffee"], // try "light", "dark", "slate", etc.
+  theme: ["cotton", "ink"], // try "light", "dark", "slate", etc.
   // header: "", // what to show in the header (HTML)
   // footer: "Built with Observable.", // what to show in the footer (HTML)
   // toc: true, // whether to show the table of contents
