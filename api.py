@@ -132,7 +132,11 @@ def fetch_logIDs(
 
             r = _call_logsAPI(filter, query_strings)
 
-        data = json.loads(r.text)
+        try:
+            data = json.loads(r.text)
+        except json.JSONDecodeError:
+            r = _call_logsAPI(filter, query_strings)
+            data = json.loads(r.text)
 
         # Get IDs
         ids = [log["id"] for log in data["encounters"]]
@@ -182,7 +186,11 @@ def fetch_log(id: int) -> List[dict]:
 
         r = _call_logAPI(id)
 
-    data = json.loads(r.text)
+    try:
+        data = json.loads(r.text)
+    except json.JSONDecodeError:
+        r = _call_logAPI(id)
+        data = json.loads(r.text)
 
     # Get general information
     date = data["date"]
