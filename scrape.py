@@ -11,8 +11,8 @@ def scrape_log(
     from_latest: bool = True,
     from_scratch: bool = False,
     log_batches: int = 20,
-    max_logs: int = 100,
-    patience: int = 20,
+    max_logs: int = 100000000,
+    patience: int = 100000000,
     force: bool = False,
 ):
     click.echo(f"Fetching logs for {boss} {gate} {difficulty}")
@@ -129,12 +129,12 @@ def cli():
 )
 @click.option(
     "--max-logs",
-    default=100,
+    default=100000000,
     help="Maximum number of logs to fetch before stopping.",
 )
 @click.option(
     "--patience",
-    default=20,
+    default=100000000,
     help="Number of empty calls before stopping.",
 )
 def boss(
@@ -144,14 +144,15 @@ def boss(
     from_latest: bool = True,
     from_scratch: bool = False,
     log_batches: int = 20,
-    max_logs: int = 100,
-    patience: int = 20,
+    max_logs: int = 100000000,
+    patience: int = 100000000,
 ):
     """
     Fetch logs for a specific boss, gate, and difficulty.
 
     BOSS is required, GATE and DIFFICULTY should not be set unless necessary.
     """
+    # TODO: Scrap until date
     scrape_log(
         boss,
         gate,
@@ -186,20 +187,20 @@ cli.add_command(boss)
 )
 @click.option(
     "--max-logs",
-    default=100,
+    default=100000000,
     help="Maximum number of logs to fetch before stopping.",
 )
 @click.option(
     "--patience",
-    default=20,
+    default=100000000,
     help="Number of empty calls before stopping.",
 )
 def all(
     from_latest: bool = True,
     from_scratch: bool = False,
     log_batches: int = 20,
-    max_logs: int = 100,
-    patience: int = 20,
+    max_logs: int = 100000000,
+    patience: int = 100000000,
 ):
     """Scrape all bosses."""
     # Start timer
