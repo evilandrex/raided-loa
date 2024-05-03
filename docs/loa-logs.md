@@ -551,7 +551,7 @@ if (selectedBoss) {
 }
 ```
 
-## ${selectedBoss ? "Class Data Table" : ""}
+## ${selectedBoss ? "Class Statistics" : ""}
 
 ```js class data table
 const classData = data
