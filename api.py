@@ -170,7 +170,7 @@ def fetch_logIDs(
 
 
 @sleep_and_retry
-@limits(calls=80, period=58)
+@limits(calls=180, period=58)
 def _call_logAPI(id: int) -> requests.Response:
     """Call the log API with a log ID, returns the log data"""
     return requests.get(f"https://logs.fau.dev/api/log/{id}")

@@ -188,12 +188,12 @@ cli.add_command(boss)
 @click.option(
     "--max-logs",
     default=100000000,
-    help="Maximum number of logs to fetch before stopping.",
+    help="Maximum number of logs to fetch before stopping",
 )
 @click.option(
     "--patience",
     default=100000000,
-    help="Number of empty calls before stopping.",
+    help="Number of empty calls before stopping",
 )
 def all(
     from_latest: bool = True,
