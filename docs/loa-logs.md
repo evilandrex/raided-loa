@@ -21,6 +21,7 @@ toc: false
     <li>Look into table options for records logs (sorting #1, disable selection)</li>
     <li>Query strings for filters</li>
     <li>Check if we can mouseover the class labels and still have highligh</li>
+    <li>Make tooltip float left or right pending side of page</li>
     <li>Customize theme</li>
     <li>Customize logo</li>
     <li>Add animation??</li>
@@ -478,7 +479,7 @@ svg
   .attr("visibility", width > minWidth ? "visible" : "hidden")
   .attr(
     "transform",
-    `translate(${margins.left}, ${plotHeight / 2}) rotate(-90)`
+    `translate(${margins.left}, ${plotHeight / 2}) rotate(-90.1)`
   )
   .attr("dy", "1em")
   .attr("text-anchor", "middle")
