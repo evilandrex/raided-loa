@@ -344,10 +344,17 @@ def classify_class(log: dict) -> dict:
                 else "Ultimate Skill: Taijutsu"
             )
         elif pClass == "Soulfist":
-            # Look for the "24050", World Decimation ability 
+            # A weird one where the RS Hype is ID "240250" but it doesn't have a name
             playerSpecs[name] = (
                 "Robust Spirit"
-                if "24050" in pDetail["skillDamage"].keys()
+                if len(
+                    [
+                        buff
+                        for buff in pDetail["skillSelfBuffs"]
+                        if buff["buffs"][0] == "240250"
+                    ]
+                )
+                > 0
                 else "Energy Overflow"
             )
         elif pClass == "Glaivier":
