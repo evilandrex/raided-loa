@@ -344,11 +344,10 @@ def classify_class(log: dict) -> dict:
                 else "Ultimate Skill: Taijutsu"
             )
         elif pClass == "Soulfist":
-            # Look for the "24050", World Decimation ability and check if its worth more than 15% of the damage
+            # Look for the "24050", World Decimation ability 
             playerSpecs[name] = (
                 "Robust Spirit"
                 if "24050" in pDetail["skillDamage"].keys()
-                and float(pDetail["skillDamage"]["24050"]["percent"]) > 10
                 else "Energy Overflow"
             )
         elif pClass == "Glaivier":
