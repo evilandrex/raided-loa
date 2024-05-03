@@ -19,6 +19,8 @@ toc: false
     <li>Maybe find a way to encrypt/decrypt filters efficiently</li>
     <li>Make opinionated defaults for each advanced option per boss</li>
     <li>Look into table options for records logs (sorting #1, disable selection)</li>
+    <li>Customize theme</li>
+    <li>Customize logo</li>
     <li>Add animation??</li>
   </p>
 </div>
