@@ -190,7 +190,11 @@ def fetch_log(id: int) -> List[dict]:
     try:
         data = json.loads(r.text)
     except json.JSONDecodeError:
-        time.sleep(5)
+        time.sleep(30)
+        r = _call_logAPI(id)
+        data = json.loads(r.text)
+    except requests.exceptions.ChunkedEncodingError:
+        time.sleep(30)
         r = _call_logAPI(id)
         data = json.loads(r.text)
 
