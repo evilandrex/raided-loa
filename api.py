@@ -348,7 +348,7 @@ def classify_class(log: dict) -> dict:
             playerSpecs[name] = (
                 "Robust Spirit"
                 if "24050" in pDetail["skillDamage"].keys()
-                and float(pDetail["skillDamage"]["24050"]["percent"]) > 15
+                and float(pDetail["skillDamage"]["24050"]["percent"]) > 10
                 else "Energy Overflow"
             )
         elif pClass == "Glaivier":
