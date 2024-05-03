@@ -220,8 +220,6 @@ const starToggle = Inputs.toggle({
 const showStars = Generators.input(starToggle);
 ```
 
-## ${selectedBoss ? "Aggregate Data" : ""}
-
 ```js get data
 const supportClasses = [
   "Blessed Aura",
