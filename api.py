@@ -96,7 +96,15 @@ def _call_logsAPI(
     # Turn query_strings dict into a string
     query_string = "&".join([f"{key}={value}" for key, value in query_strings.items()])
 
-    return requests.post(f"https://logs.fau.dev/api/logs?{query_string}", json=filter)
+    try:
+        return requests.post(
+            f"https://logs.fau.dev/api/logs?{query_string}", json=filter
+        )
+    except:
+        time.sleep(30)
+        return requests.post(
+            f"https://logs.fau.dev/api/logs?{query_string}", json=filter
+        )
 
 
 def fetch_logIDs(
@@ -173,7 +181,11 @@ def fetch_logIDs(
 @limits(calls=180, period=58)
 def _call_logAPI(id: int) -> requests.Response:
     """Call the log API with a log ID, returns the log data"""
-    return requests.get(f"https://logs.fau.dev/api/log/{id}")
+    try:
+        return requests.get(f"https://logs.fau.dev/api/log/{id}")
+    except:
+        time.sleep(30)
+        return requests.get(f"https://logs.fau.dev/api/log/{id}")
 
 
 def fetch_log(id: int) -> List[dict]:
@@ -190,10 +202,6 @@ def fetch_log(id: int) -> List[dict]:
     try:
         data = json.loads(r.text)
     except json.JSONDecodeError:
-        time.sleep(30)
-        r = _call_logAPI(id)
-        data = json.loads(r.text)
-    except requests.exceptions.ChunkedEncodingError:
         time.sleep(30)
         r = _call_logAPI(id)
         data = json.loads(r.text)
