@@ -18,6 +18,14 @@ BOSSES = {
     "Thaemine": {"Normal": [1, 2, 3], "Hard": [1, 2, 3, 4]},
 }
 
+KEEP_UPDATED = {
+    "Sonavel": {},
+    "Gargadeth": {},
+    "Veskal": {},
+    "Brelshaza": {"Hard": [1, 2, 3, 4]},
+    "Kayangel": {"Hard": [1, 2, 3]},
+}
+
 
 class Filter:
     """Class for a query filter"""

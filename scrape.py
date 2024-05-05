@@ -153,6 +153,8 @@ def boss(
     BOSS is required, GATE and DIFFICULTY should not be set unless necessary.
     """
     # TODO: Scrap until date
+    # TODO: Update specific classes
+    # TODO: Update specific IDs
     scrape_log(
         boss,
         gate,
@@ -209,6 +211,73 @@ def all(
     # Build a list of filter args
     bossArgs = []
     for bossName, info in api.BOSSES.items():
+        # If info is empty, it's probably a guardian
+        if info == {}:
+            bossArgs += [{"boss": bossName}]
+        else:
+            # Get the keys for difficulty
+            for diff, gates in info.items():
+                for gate in gates:
+                    bossArgs += [{"boss": bossName, "gate": gate, "difficulty": diff}]
+
+    # Loop through bossArgs
+    for kwargs in bossArgs:
+        scrape_log(
+            **kwargs,
+            from_latest=from_latest,
+            from_scratch=from_scratch,
+            log_batches=log_batches,
+            max_logs=max_logs,
+            patience=patience,
+            force=True,
+        )
+
+    # End timer
+    end = time.time()
+    click.echo(f"Time elapsed: {end - start:.2f} seconds")
+
+
+@click.command()
+@click.option(
+    "--from-latest/--from-oldest",
+    default=True,
+    help="Start from either the latest or oldest log",
+)
+@click.option(
+    "--from-scratch",
+    default=False,
+    is_flag=True,
+    help="Start from scratch, overwrite cached logs",
+)
+@click.option(
+    "--log-batches",
+    default=20,
+    help="Number of logs to fetch per batch",
+)
+@click.option(
+    "--max-logs",
+    default=100000000,
+    help="Maximum number of logs to fetch before stopping",
+)
+@click.option(
+    "--patience",
+    default=100000000,
+    help="Number of empty calls before stopping",
+)
+def update(
+    from_latest: bool = True,
+    from_scratch: bool = False,
+    log_batches: int = 20,
+    max_logs: int = 100000000,
+    patience: int = 100000000,
+):
+    """Update relevant bosses."""
+    # Start timer
+    start = time.time()
+
+    # Build a list of filter args
+    bossArgs = []
+    for bossName, info in api.KEEP_UPDATED.items():
         # If info is empty, it's probably a guardian
         if info == {}:
             bossArgs += [{"boss": bossName}]
