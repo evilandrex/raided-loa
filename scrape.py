@@ -237,6 +237,9 @@ def all(
     click.echo(f"Time elapsed: {end - start:.2f} seconds")
 
 
+cli.add_command(all)
+
+
 @click.command()
 @click.option(
     "--from-latest/--from-oldest",
@@ -304,7 +307,8 @@ def update(
     click.echo(f"Time elapsed: {end - start:.2f} seconds")
 
 
-cli.add_command(all)
+cli.add_command(update)
+
 
 if __name__ == "__main__":
     cli()
