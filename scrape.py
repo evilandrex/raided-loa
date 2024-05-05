@@ -14,6 +14,7 @@ def scrape_log(
     max_logs: int = 100000000,
     patience: int = 100000000,
     force: bool = False,
+    verbose: bool = False,
 ):
     click.echo(f"Fetching logs for {boss} {gate} {difficulty}")
     click.echo(f"Starting from {'latest' if from_latest else 'oldest'}")
@@ -67,6 +68,7 @@ def scrape_log(
             parsed_logs=oldIDs,
             last_id=lastID,
             last_date=lastDate,
+            verbose=verbose,
         )
         if len(logIDs) == 0:
             emptyRounds += 1
@@ -76,9 +78,10 @@ def scrape_log(
         else:
             emptyRounds = 0
 
-        click.echo("Working on logs")
+        click.echo("Scraping on log info")
         for logID in logIDs:
-            click.echo(f"Working on log ID {logID}\r", nl=False)
+            if verbose:
+                click.echo(f"Working on log ID {logID}\r", nl=False)
             log = api.fetch_log(logID)
 
             df = pd.concat([df, log])
@@ -140,6 +143,13 @@ def cli():
     default=100000000,
     help="Number of empty calls before stopping.",
 )
+@click.option(
+    "--verbose",
+    "-v",
+    default=False,
+    is_flag=True,
+    help="Print extra information",
+)
 def boss(
     boss: str,
     gate: int = None,
@@ -149,6 +159,7 @@ def boss(
     log_batches: int = 20,
     max_logs: int = 100000000,
     patience: int = 100000000,
+    verbose: bool = False,
 ):
     """
     Fetch logs for a specific boss, gate, and difficulty.
@@ -167,6 +178,7 @@ def boss(
         log_batches,
         max_logs,
         patience,
+        verbose,
     )
 
 
@@ -200,12 +212,20 @@ cli.add_command(boss)
     default=100000000,
     help="Number of empty calls before stopping",
 )
+@click.option(
+    "--verbose",
+    "-v",
+    default=False,
+    is_flag=True,
+    help="Print extra information",
+)
 def all(
     from_latest: bool = True,
     from_scratch: bool = False,
     log_batches: int = 20,
     max_logs: int = 100000000,
     patience: int = 100000000,
+    verbose: bool = False,
 ):
     """Scrape all bosses."""
     # Start timer
@@ -233,6 +253,7 @@ def all(
             max_logs=max_logs,
             patience=patience,
             force=True,
+            verbose=verbose,
         )
 
     # End timer
@@ -270,12 +291,20 @@ cli.add_command(all)
     default=100000000,
     help="Number of empty calls before stopping",
 )
+@click.option(
+    "--verbose",
+    "-v",
+    default=False,
+    is_flag=True,
+    help="Print extra information",
+)
 def update(
     from_latest: bool = True,
     from_scratch: bool = False,
     log_batches: int = 20,
     max_logs: int = 100000000,
     patience: int = 100000000,
+    verbose: bool = False,
 ):
     """Update relevant bosses."""
     # Start timer
@@ -303,6 +332,7 @@ def update(
             max_logs=max_logs,
             patience=patience,
             force=True,
+            verbose=verbose,
         )
 
     # End timer

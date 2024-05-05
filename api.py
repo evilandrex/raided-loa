@@ -122,6 +122,7 @@ def fetch_logIDs(
     last_id: int = None,
     last_date: int = None,
     patience: int = 20,
+    verbose: bool = False,
 ) -> List[int]:
     # Keep fetching logs to get IDs until we can't
     logIDs = []
@@ -170,7 +171,8 @@ def fetch_logIDs(
             ids = [id for id in ids if id not in parsed_logs]
             logIDs += ids
 
-            click.echo(f"Found {len(logIDs)} logs so far\r", nl=False)
+            if verbose:
+                click.echo(f"Found {len(logIDs)} logs so far\r", nl=False)
 
             if len(ids) == 0:
                 emptyRounds += 1
