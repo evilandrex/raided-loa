@@ -17,7 +17,7 @@ jobs:
           cache: "pip" # caching pip dependencies
       - run: pip install -r requirements.txt
       - name: Scrape all bosses
-        run: python scrape.py all --from-latest --max-logs 10000 --patience 5
+        run: python scrape.py update --from-latest --max-logs 10000 --patience 5
       - uses: mikeal/publish-to-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub sets this for you
