@@ -18,16 +18,22 @@ jobs:
     name: Scrape latest logs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.8"
           cache: "pip" # caching pip dependencies
 
-      - run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
       - name: Scrape all bosses
         run: python scrape.py update --from-latest --max-logs 10000 --patience 5
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update from latest logs"
