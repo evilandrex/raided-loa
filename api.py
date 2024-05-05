@@ -465,7 +465,7 @@ def classify_class(log: dict) -> dict:
                 else "Drizzle"
             )
         else:
-            raise ValueError(f"Unknown class: {pClass}")
+            playerSpecs[name] = "Unknown"
 
     return playerSpecs
 
@@ -483,6 +483,10 @@ def classify_weird(log: dict, specs: dict) -> bool:
     # Does not have the expected number of supports
     nSupports = len([spec for spec in specs.values() if spec in SUPPORTS])
     if (nPlayers == 4 and not nSupports == 1) or (nPlayers == 8 and not nSupports == 2):
+        return True
+
+    # Player without a class
+    if "Unknown" in specs.values():
         return True
 
     return False
