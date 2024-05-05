@@ -127,6 +127,8 @@ def fetch_logIDs(
     logIDs = []
     fetching = True
     emptyRounds = 0
+
+    click.echo("Looking for logs")
     while fetching:
         if last_id is None:
             query_strings = {}
@@ -168,7 +170,7 @@ def fetch_logIDs(
             ids = [id for id in ids if id not in parsed_logs]
             logIDs += ids
 
-            click.echo(f"Found {len(ids)} logs in the last call")
+            click.echo(f"Found {len(logIDs)} logs so far\r", nl=False)
 
             if len(ids) == 0:
                 emptyRounds += 1

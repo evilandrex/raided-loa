@@ -76,8 +76,9 @@ def scrape_log(
         else:
             emptyRounds = 0
 
+        click.echo("Working on logs")
         for logID in logIDs:
-            click.echo(f"Working on log ID {logID}")
+            click.echo(f"Working on log ID {logID}\r", nl=False)
             log = api.fetch_log(logID)
 
             df = pd.concat([df, log])
@@ -94,12 +95,14 @@ def scrape_log(
             click.echo("No more logs found.")
             break
 
+        click.echo("Batch complete, saving logs.")
         # Save to csv (saves once per batch)
         df.to_csv(f"./data/{filter.to_name()}.csv", index=False)
 
     # End timer
     end = time.time()
     click.echo(f"Time elapsed: {end - start:.2f} seconds")
+    click.echo("==========")
 
 
 @click.group()
