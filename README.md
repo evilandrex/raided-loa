@@ -7,6 +7,9 @@ that if one were to take a screenshot of the plot, most of the relevant
 information is available while allowing interactivity to give exact details and
 improve ease of use.
 
+We automatically deploy to Github Pages from the `main` branch of this repo. The
+files served are entirely static.  
+
 The data is scraped from [Faust's Lost Ark logs](https://logs.fau.dev/logs)
 using their API and stored in a separate repo, which is where the data is pulled
 from for the client. See the
