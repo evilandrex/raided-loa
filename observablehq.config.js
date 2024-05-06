@@ -8,7 +8,8 @@ export default {
   // lets you organize them into sections and have unlisted pages.
   pages: [
     {name: "Logs", path: "/loa-logs"},
-    {name: "Analysis", path: "/loa-analysis"},
+    //{name: "Analysis", path: "/loa-analysis"},
+    {name: "Future", path: "/future"}
   ],
 
   // Content to add to the head of the page, e.g. for a favicon:
