@@ -8,7 +8,7 @@ information is available while allowing interactivity to give exact details and
 improve ease of use.
 
 We automatically deploy to Github Pages from the `main` branch of this repo. The
-files served are entirely static.  
+files served are entirely static. You can find the page [here](https://raided.pro).
 
 The data is scraped from [Faust's Lost Ark logs](https://logs.fau.dev/logs)
 using their API and stored in a separate repo, which is where the data is pulled
