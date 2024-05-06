@@ -9,7 +9,6 @@ toc: false
   <p>This is a work in progress!</p>
   <p>
     TODO:
-    <li>Make best stars clickable as links</li>
     <li>Scrape Sonavel to fix TTH, Taijutsu, CO classifications</li>
     <li>Scrape Gargadeth to fix CO classifications</li>
     <li>Scrape all EO logs to check if they're actually RS</li>
@@ -435,18 +434,6 @@ g.append("line")
   .attr("y2", (d) => yScale(d.Build) + (yScale.bandwidth() * 3) / 4)
   .attr("stroke", "var(--theme-foreground)");
 
-// Add a star for the best
-g.append("text")
-  .attr("x", (d) => xScale(d.Max))
-  .attr("y", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
-  .attr("dy", "0.35em")
-  .attr("text-anchor", "middle")
-  .attr("fill", "var(--theme-foreground-focus)")
-  .attr("font-size", "20px")
-  .attr("opacity", "0.5")
-  .attr("visibility", (d) => (showStars ? "visible" : "hidden"))
-  .text("★");
-
 // Create x-axis
 const xAxis = d3.axisBottom(xScale).ticks(10, "s");
 svg
@@ -555,6 +542,9 @@ g.append("rect")
     d3.select(event.target)
       .attr("fill", "var(--theme-foreground-muted)")
       .attr("opacity", "0.25");
+
+    // Change mouse
+    d3.select(this).style("cursor", "pointer");
   })
   .on("mouseout", () => {
     tooltip.style("opacity", 0);
@@ -562,6 +552,9 @@ g.append("rect")
     tooltip.style("left", "-9999px");
     // Lighten row
     g.selectAll(".rowMouseBox").attr("fill", "transparent");
+
+    // Reset mouse
+    d3.select(this).style("cursor", "");
   })
   .on("mousemove", (event) => {
     if (event.offsetX > width / 2) {
@@ -571,6 +564,74 @@ g.append("rect")
     }
 
     tooltip.style("top", event.pageY - 30 + "px");
+  });
+
+g.append("path")
+  .attr("d", d3.symbol(d3.symbolStar).size(60))
+  .attr(
+    "transform",
+    (d) =>
+      `translate(${xScale(d.Max)}, ${yScale(d.Build) + yScale.bandwidth() / 2})`
+  )
+  .attr("fill", "var(--theme-foreground-focus)")
+  .attr("opacity", "0.5")
+  .attr("visibility", (d) => (showStars ? "visible" : "hidden"))
+  .on("mouseover", (event, d) => {
+    d3.select(event.target).attr("opacity", "1");
+    d3.select(this).style("cursor", "pointer");
+
+    // Find the link to the best log
+    let bestLink = "https://logs.fau.dev/log/";
+    bestLink += data
+      .filter(
+        aq.escape(
+          (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
+        )
+      )
+      .array("id")[0];
+
+    tooltip.style("opacity", 1).html(`
+      <div class="card" style="padding: 7px;">
+        <div>${d.Build.split(" (")[0]}</div>
+        <div>${d3.format(".3s")(d.Max)} DPS</div>
+
+        ${bestLink}   
+      </div>
+    `);
+  })
+  .on("mouseout", (event, d) => {
+    d3.select(event.target).attr("opacity", "0.5");
+    d3.select(this).style("cursor", "");
+
+    // Hide tooltip
+    tooltip.style("opacity", 0);
+    tooltip.style("left", "-9999px");
+
+    // Reset mouse
+    d3.select(this).style("cursor", "");
+  })
+  .on("mousemove", (event) => {
+    if (event.offsetX > width / 2) {
+      tooltip.style("left", event.offsetX - 140 + "px");
+    } else {
+      tooltip.style("left", event.offsetX + 30 + "px");
+    }
+
+    tooltip.style("top", event.pageY - 30 + "px");
+  })
+  .on("click", (event, d) => {
+    window.open(
+      `https://logs.fau.dev/log/${
+        data
+          .filter(
+            aq.escape(
+              (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
+            )
+          )
+          .array("id")[0]
+      }`,
+      "_blank"
+    );
   });
 
 if (selectedBoss) {
