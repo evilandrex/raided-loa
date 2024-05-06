@@ -14,10 +14,10 @@ toc: false
     <li>Scrape Gargadeth to fix CO classifications</li>
     <li>Scrape all EO logs to check if they're actually RS</li>
     <li>Play with class colors</li>
+    <li>Add clicky interactions</li>
     <li>Add info beside filters</li>
     <li>Look into table options for records logs (sorting #1, disable selection)</li>
     <li>Query strings for filters</li>
-    <li>Check if we can mouseover the class labels and still have highligh</li>
     <li>Make tooltip float left or right pending side of page</li>
     <li>Reset button for advanced options</li>
     <li>Add animation??</li>
@@ -503,15 +503,25 @@ svg
   .text("Build (Logs)");
 
 // Add branding at the bottom right
+let brandString = `Raided Lost Ark - ${new Date().toLocaleDateString()} - ${selectedBoss}`;
+if (difficulty) {
+  brandString += ` - ${difficulty[0]}M - G${gate}`;
+}
+// Add ilevel
+brandString += ` - ${iLevelMin}-${iLevelMax}`;
 svg
   .append("text")
-  .attr("x", width - margins.right)
-  .attr("y", height - xAxisHeight - margins.bottom - yScale.bandwidth() / 2)
-  .attr("text-anchor", "end")
+  .attr(
+    "transform",
+    `translate(${yAxisWidth + 25}, ${
+      height - xAxisHeight - margins.bottom - 5
+    }) rotate(-90.1)`
+  )
+  .attr("text-anchor", "start")
   .attr("font-family", "var(--sans-serif)")
   .attr("font-size", "12px")
   .attr("fill", "var(--theme-foreground-faintest)")
-  .text(`Raided Lost Ark - ${new Date().toLocaleDateString()}`);
+  .text(brandString);
 
 // Prepare tooltip
 const tooltip = d3
