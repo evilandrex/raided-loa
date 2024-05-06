@@ -72,7 +72,10 @@ def scrape_log(
         )
         if len(logIDs) == 0:
             emptyRounds += 1
-            click.echo(f"Empty batch of logs, empty rounds: {emptyRounds}/{patience}.")
+            if verbose:
+                click.echo(
+                    f"Empty batch of logs, empty rounds: {emptyRounds}/{patience}."
+                )
 
             continue
         else:
@@ -107,6 +110,7 @@ def scrape_log(
     # End timer
     end = time.time()
     click.echo(f"Time elapsed: {end - start:.2f} seconds")
+    click.echo(f"Logs scraped: {newLogsParsed}")
     click.echo("==========")
 
 
