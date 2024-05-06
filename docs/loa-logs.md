@@ -56,7 +56,7 @@ toc: false
 const guardians = ["Sonavel", "Gargadeth", "Veskal"];
 
 const raids = {
-  Brelshaza: [1, 2, 3, 4, 5, 6],
+  Brelshaza: [1, 2, 3, 4],
   Kayangel: [1, 2, 3],
   Akkan: [1, 2, 3],
   Ivory: [1, 2, 3, 4],
