@@ -814,15 +814,19 @@ if (selectedBoss) {
 ```
 
 ```js
-const nLogs = data
-  .rollup({
-    ids: aq.op.array_agg_distinct("id"),
-  })
-  .array("ids")[0].length;
+let latestLog;
+let nLogs;
+if (selectedBoss) {
+  nLogs = data
+    .rollup({
+      ids: aq.op.array_agg_distinct("id"),
+    })
+    .array("ids")[0].length;
 
-const latestLog = data
-  .select("date")
-  .rollup({ latest: aq.op.max("date") })
-  .array("latest")[0]
-  .toLocaleDateString();
+  latestLog = data
+    .select("date")
+    .rollup({ latest: aq.op.max("date") })
+    .array("latest")[0]
+    .toLocaleDateString();
+}
 ```
