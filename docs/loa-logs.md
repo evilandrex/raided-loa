@@ -636,24 +636,51 @@ g.append("path")
     );
   });
 
-svg.on("mousemove", (event) => {
-  const x = event.offsetX;
-  const y = event.offsetY;
+svg
+  .on("mousemove", (event) => {
+    const x = event.offsetX;
+    const y = event.offsetY;
 
-  // Update line
-  svg
-    .selectAll(".mouseLine")
-    .attr("x", x + 1)
-    .attr("y", margins.top)
-    .attr("width", 1)
-    .attr("height", height - xAxisHeight - margins.bottom)
-    .attr("fill", "var(--theme-foreground-muted)")
-    .attr("opacity", 0.5)
-    .attr("visibility", x > yAxisWidth ? "visible" : "hidden");
-})
+    // Update line
+    svg
+      .selectAll(".mouseLine")
+      .attr("x", x + 1)
+      .attr("y", margins.top)
+      .attr("width", 1)
+      .attr("height", height - xAxisHeight - margins.bottom)
+      .attr("fill", "var(--theme-foreground-muted)")
+      .attr("opacity", 0.5)
+      .attr("visibility", x > yAxisWidth ? "visible" : "hidden");
+  })
   .on("mouseout", () => {
     svg.selectAll(".mouseLine").attr("visibility", "hidden");
-  })
+  });
+
+// Add latest log date string
+svg
+  .append("text")
+  .attr(
+    "transform",
+    `translate(${width - margins.right}, ${height - margins.bottom - 5})`
+  )
+  .attr("text-anchor", "end")
+  .attr("font-family", "var(--sans-serif)")
+  .attr("font-size", "12px")
+  .attr("fill", "var(--theme-foreground-faintest)")
+  .text(`Latest log: ${latestLog}`);
+
+// Add total logs string
+svg
+  .append("text")
+  .attr(
+    "transform",
+    `translate(${width - margins.right}, ${height - margins.bottom - 20})`
+  )
+  .attr("text-anchor", "end")
+  .attr("font-family", "var(--sans-serif)")
+  .attr("font-size", "12px")
+  .attr("fill", "var(--theme-foreground-faintest)")
+  .text(`Total logs: ${nLogs}`);
 
 if (selectedBoss) {
   display(svg.node());
@@ -784,4 +811,18 @@ if (selectedBoss) {
     })
   );
 }
+```
+
+```js
+const nLogs = data
+  .rollup({
+    ids: aq.op.array_agg_distinct("id"),
+  })
+  .array("ids")[0].length;
+
+const latestLog = data
+  .select("date")
+  .rollup({ latest: aq.op.max("date") })
+  .array("latest")[0]
+  .toLocaleDateString();
 ```
