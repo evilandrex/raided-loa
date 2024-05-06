@@ -21,7 +21,7 @@ export default {
   footer: "A Raided Project",
   toc: false, // whether to show the table of contents
   // pager: true, // whether to show previous & next links in the footer
-  // root: "docs", // path to the source root for preview
+  root: "src", // path to the source root for preview
   // output: "dist", // path to the output root for build
   search: false, 
 };

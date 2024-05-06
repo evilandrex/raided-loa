@@ -813,7 +813,7 @@ if (selectedBoss) {
 }
 ```
 
-```js
+```js log statistics
 let latestLog;
 let nLogs;
 if (selectedBoss) {
