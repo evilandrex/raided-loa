@@ -18,8 +18,6 @@ toc: false
     <li>Add info beside filters</li>
     <li>Look into table options for records logs (sorting #1, disable selection)</li>
     <li>Query strings for filters</li>
-    <li>Make tooltip float left or right pending side of page</li>
-    <li>Reset button for advanced options</li>
     <li>Add animation??</li>
   </p>
 </div>
@@ -566,7 +564,12 @@ g.append("rect")
     g.selectAll(".rowMouseBox").attr("fill", "transparent");
   })
   .on("mousemove", (event) => {
-    tooltip.style("left", event.offsetX - 140 + "px");
+    if (event.offsetX > width / 2) {
+      tooltip.style("left", event.offsetX - 140 + "px");
+    } else {
+      tooltip.style("left", event.offsetX + 30 + "px");
+    }
+
     tooltip.style("top", event.pageY - 30 + "px");
   });
 
