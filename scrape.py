@@ -78,7 +78,8 @@ def scrape_log(
         else:
             emptyRounds = 0
 
-        click.echo("Scraping on log info")
+        if verbose:
+            click.echo("Scraping for log info")
         for logID in logIDs:
             if verbose:
                 click.echo(f"Working on log ID {logID}\r", nl=False)
@@ -98,7 +99,8 @@ def scrape_log(
             click.echo("No more logs found.")
             break
 
-        click.echo("Batch complete, saving logs.")
+        if verbose:
+            click.echo("Batch complete, saving logs.")
         # Save to csv (saves once per batch)
         df.to_csv(f"./data/{filter.to_name()}.csv", index=False)
 

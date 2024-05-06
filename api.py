@@ -24,6 +24,7 @@ KEEP_UPDATED = {
     "Veskal": {},
     "Brelshaza": {"Hard": [1, 2, 3, 4]},
     "Kayangel": {"Hard": [1, 2, 3]},
+    "Akkan": {"Normal": [1, 2, 3], "Hard": [1, 2]},
 }
 
 
@@ -129,7 +130,8 @@ def fetch_logIDs(
     fetching = True
     emptyRounds = 0
 
-    click.echo("Looking for logs")
+    if verbose:
+        click.echo("Looking for logs")
     while fetching:
         if last_id is None:
             query_strings = {}
@@ -184,7 +186,8 @@ def fetch_logIDs(
             and emptyRounds < patience
         )
 
-    click.echo(f"Found a total of {len(logIDs)} logs")
+    if verbose:
+        click.echo(f"Found a total of {len(logIDs)} logs")
 
     return logIDs
 
