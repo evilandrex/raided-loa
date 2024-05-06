@@ -24,7 +24,7 @@ npm run dev
 
 Then visit <http://localhost:3000> to preview your project.
 
-## Command reference
+### Command reference
 
 | Command              | Description                                 |
 | -------------------- | ------------------------------------------- |
