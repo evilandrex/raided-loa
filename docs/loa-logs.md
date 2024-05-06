@@ -38,6 +38,12 @@ toc: false
         ${starToggle}
       </details>
     </div>
+    <div>
+      <details>
+      <summary>Info</summary>
+      So there's more to do.
+      </details>
+    </div>
 </div>
 
 ```js boss selector
@@ -482,7 +488,7 @@ svg
   .append("text")
   .attr(
     "transform",
-    `translate(${yAxisWidth + 25}, ${
+    `translate(${width > minWidth ? yAxisWidth + 25 : width - margins.left}, ${
       height - xAxisHeight - margins.bottom - 5
     }) rotate(-90.1)`
   )
