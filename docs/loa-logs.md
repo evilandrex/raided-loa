@@ -511,6 +511,9 @@ const tooltip = d3
   .style("position", "absolute")
   .style("opacity", 0);
 
+// Draw vertical line following mouse
+svg.append("rect").attr("class", "mouseLine").attr("fill", "black");
+
 // Add invisible box to support mouse over
 g.append("rect")
   .attr("class", "rowMouseBox")
@@ -541,6 +544,9 @@ g.append("rect")
 
     // Change mouse
     d3.select(this).style("cursor", "pointer");
+
+    // Keep updating line
+    svg.selectAll(".mouseLine").attr("visibility", "visible");
   })
   .on("mouseout", () => {
     tooltip.style("opacity", 0);
@@ -591,7 +597,7 @@ g.append("path")
         <div>${d.Build.split(" (")[0]}</div>
         <div>${d3.format(".3s")(d.Max)} DPS</div>
 
-        ${bestLink}   
+        ${bestLink}
       </div>
     `);
   })
@@ -629,6 +635,25 @@ g.append("path")
       "_blank"
     );
   });
+
+svg.on("mousemove", (event) => {
+  const x = event.offsetX;
+  const y = event.offsetY;
+
+  // Update line
+  svg
+    .selectAll(".mouseLine")
+    .attr("x", x + 1)
+    .attr("y", margins.top)
+    .attr("width", 1)
+    .attr("height", height - xAxisHeight - margins.bottom)
+    .attr("fill", "var(--theme-foreground-muted)")
+    .attr("opacity", 0.5)
+    .attr("visibility", x > yAxisWidth ? "visible" : "hidden");
+})
+  .on("mouseout", () => {
+    svg.selectAll(".mouseLine").attr("visibility", "hidden");
+  })
 
 if (selectedBoss) {
   display(svg.node());
