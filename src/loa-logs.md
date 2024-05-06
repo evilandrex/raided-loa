@@ -258,9 +258,13 @@ let data = await aq.loadCSV(url, {
 });
 
 if (selectedBoss != null) {
+  // Add extra day to make sure we actually get everything
+  const dateEndExtra = new Date(dateEnd);
+  dateEndExtra.setDate(dateEndExtra.getDate() + 1);
+
   // Filter based on inputs
   data = data
-    .filter(aq.escape((d) => d.date >= dateStart && d.date <= dateEnd))
+    .filter(aq.escape((d) => d.date >= dateStart && d.date <= dateEndExtra))
     .filter(aq.escape((d) => (filterWeird ? d.weird === false : true)))
     .filter(aq.escape((d) => (filterDead ? d.dead === false : true)))
     .filter(
