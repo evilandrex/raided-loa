@@ -10,7 +10,6 @@ toc: false
   <p>
     TODO:
     <li>Make best stars clickable as links</li>
-    <li>Look into better display of difficulty/gate selectors</li>
     <li>Scrape Sonavel to fix TTH, Taijutsu, CO classifications</li>
     <li>Scrape Gargadeth to fix CO classifications</li>
     <li>Scrape all EO logs to check if they're actually RS</li>
@@ -21,8 +20,6 @@ toc: false
     <li>Check if we can mouseover the class labels and still have highligh</li>
     <li>Make tooltip float left or right pending side of page</li>
     <li>Reset button for advanced options</li>
-    <li>Customize theme</li>
-    <li>Customize logo</li>
     <li>Add animation??</li>
   </p>
 </div>
@@ -100,7 +97,11 @@ const diffValue =
     ? null
     : "Normal";
 
-const difficultyRadio = Inputs.radio(["Normal", "Hard"], {
+const difficulties = Object.keys(raids).includes(selectedBoss)
+  ? ["Normal", "Hard"]
+  : [];
+
+const difficultyRadio = Inputs.radio(difficulties, {
   value: diffValue,
   label: "Difficulty",
   disabled: reqDiff,
@@ -111,7 +112,7 @@ const difficulty = Generators.input(difficultyRadio);
 ```js gates radio
 const gates = Object.keys(raids).includes(selectedBoss)
   ? raids[selectedBoss]
-  : ["No Gates"];
+  : [];
 const gateRadio = Inputs.radio(gates, {
   value: gates.length <= 1 ? null : gates[0],
   label: "Gate",
