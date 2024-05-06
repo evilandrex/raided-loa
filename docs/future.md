@@ -9,7 +9,6 @@
     <li>Scrape all EO logs to check if they're actually RS</li>
     <li>Play with class colors</li>
     <li>Add clicky interactions</li>
-    <li>Add info beside filters</li>
     <li>Look into table options for records logs (sorting #1, disable selection)</li>
     <li>Query strings for filters</li>
   </p>

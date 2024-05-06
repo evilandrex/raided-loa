@@ -40,8 +40,12 @@ toc: false
     </div>
     <div>
       <details>
-      <summary>Info</summary>
-      So there's more to do.
+        <summary>Info</summary>
+        Default advanced options are intended to show relevant logs from 
+        characters at the right ilevel to do that content (not overleveled). You
+        can click the stars to see the best logs for each build. You can filter
+        the builds shown in the chart using the class statistics table. The 
+        record logs table sorting and selection do not work and do nothing.
       </details>
     </div>
 </div>
