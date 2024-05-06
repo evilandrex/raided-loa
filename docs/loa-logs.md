@@ -170,14 +170,14 @@ const dateEnd = Generators.input(dateEndSelect);
 
 ```js ilevel ranges
 const bossIlevelDefaults = {
-  Sonavel: [1580, 1599],
-  Gargadeth: [1610, 1619],
-  Veskal: [1630, 1639],
-  Brelshaza: { Hard: [1580, 1599] },
+  Sonavel: [1580, 1609],
+  Gargadeth: [1610, 1629],
+  Veskal: [1630, 1675],
+  Brelshaza: { Hard: [1580, 1609] },
   Kayangel: { Hard: [1580, 1599] },
-  Akkan: { Normal: [1580, 1599], Hard: [1600, 1609] },
-  Ivory: { Normal: [1600, 1609], Hard: [1620, 1629] },
-  Thaemine: { Normal: [1610, 1619], Hard: [1630, 1639] },
+  Akkan: { Normal: [1580, 1599], Hard: [1600, 1675] },
+  Ivory: { Normal: [1600, 1619], Hard: [1620, 1675] },
+  Thaemine: { Normal: [1610, 1629], Hard: [1630, 1675] },
 };
 
 const iLevelDefaults = bossIlevelDefaults[selectedBoss]
