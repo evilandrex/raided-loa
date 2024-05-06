@@ -13,15 +13,14 @@ toc: false
     <li>Look into better display of difficulty/gate selectors</li>
     <li>Scrape Sonavel to fix TTH, Taijutsu, CO classifications</li>
     <li>Scrape Gargadeth to fix CO classifications</li>
+    <li>Scrape all EO logs to check if they're actually RS</li>
     <li>Play with class colors</li>
-    <li>Finish scraping other bosses</li>
     <li>Add info beside filters</li>
-    <li>Maybe find a way to encrypt/decrypt filters efficiently</li>
-    <li>Make opinionated defaults for each advanced option per boss</li>
     <li>Look into table options for records logs (sorting #1, disable selection)</li>
     <li>Query strings for filters</li>
     <li>Check if we can mouseover the class labels and still have highligh</li>
     <li>Make tooltip float left or right pending side of page</li>
+    <li>Reset button for advanced options</li>
     <li>Customize theme</li>
     <li>Customize logo</li>
     <li>Add animation??</li>
@@ -169,14 +168,30 @@ const dateEnd = Generators.input(dateEndSelect);
 ```
 
 ```js ilevel ranges
+const bossIlevelDefaults = {
+  Sonavel: [1580, 1599],
+  Gargadeth: [1610, 1619],
+  Veskal: [1630, 1639],
+  Brelshaza: { Hard: [1580, 1599] },
+  Kayangel: { Hard: [1580, 1599] },
+  Akkan: { Normal: [1580, 1599], Hard: [1600, 1609] },
+  Ivory: { Normal: [1600, 1609], Hard: [1620, 1629] },
+  Thaemine: { Normal: [1610, 1619], Hard: [1630, 1639] },
+};
+
+const iLevelDefaults = bossIlevelDefaults[selectedBoss]
+  ? bossIlevelDefaults[selectedBoss][difficulty]
+    ? bossIlevelDefaults[selectedBoss][difficulty]
+    : bossIlevelDefaults[selectedBoss]
+  : [1580, 1675];
 const iLevelMinRange = Inputs.range([1580, 1675], {
-  value: 1580,
+  value: iLevelDefaults[0],
   step: 1,
 });
 const iLevelMin = Generators.input(iLevelMinRange);
 
 const iLevelMaxRange = Inputs.range([1580, 1675], {
-  value: 1675,
+  value: iLevelDefaults[1],
   step: 1,
 });
 const iLevelMax = Generators.input(iLevelMaxRange);
@@ -184,7 +199,7 @@ const iLevelMax = Generators.input(iLevelMaxRange);
 
 ```js duration ranges
 const durationMinRange = Inputs.range([0, 3600], {
-  value: 90,
+  value: 120,
   step: 1,
 });
 const durationMin = Generators.input(durationMinRange);
