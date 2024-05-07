@@ -184,5 +184,5 @@ not an exact representation of the true ranks of each build.
 ## Acknowledgements
 
 Thanks to Faust for providing the logs and the API. Thanks to Snow for creating
-Lost Ark Logs. Thanks for PoisonSandwich and Kennethyu for inspiration and early
+Lost Ark Logs. Thanks for PoisonSandwich and Kennethnyu for inspiration and early
 feedback.
