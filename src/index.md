@@ -83,7 +83,8 @@ night and classify each player in the logs based on their build. We produce
 box plots using this data. The boxplots follow the typical procedures. It should
 be noted that the whiskers [Q1 - 1.5 * IQR, Q3 + 1.5 * IQR] are truncated to the
 minimum and maximum values for that build to guarantee that it represents a
-possible value.
+possible value. The line in the middle represents the median and the dot in the
+bar represents the mean.
 
 The default filters, in general, seek to provide a representative dataset for on
 ilevel players in the typical situations in the current balance patch.
