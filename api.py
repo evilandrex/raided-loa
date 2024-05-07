@@ -627,15 +627,16 @@ def update_logs(
     # Get IDs to update
     toUpdate = list(ids)
     if len(builds) > 0:
-        toUpdate += list(data.loc[data['class'].isin(builds)]["id"].unique())
+        toUpdate += list(data.loc[data["class"].isin(builds)]["id"].unique())
 
     # Remove the to be updated IDs from data
     data = data[~data["id"].isin(toUpdate)]
 
     # Fetch the logs
+    click.echo(f"Updating logs for {filter}")
     for id in toUpdate:
         if verbose:
-            click.echo(f"Updating log ID {id}")
+            click.echo(f"Updating log ID {id}\r", nl=False)
         log = fetch_log(id)
 
         data = pd.concat([data, log])
