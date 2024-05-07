@@ -138,7 +138,7 @@ their main engraving.
 
 - Sharpshooter: Checking for the Loyal Companion buff
 - Deadeye: Checking for the Enhanced Weapon buff
-- Artillerist: Checking for the Barrage skills
+- Artillerist: Checking for the Barrage: Focus Fire skill doing more than 10% damage
 - Machinist: Checking for the Evolutionary Legacy buff
 - Gunslinger: Checking for Sharpshooter skill (Peacemaker)
 
