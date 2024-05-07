@@ -18,15 +18,6 @@ BOSSES = {
     "Thaemine": {"Normal": [1, 2, 3], "Hard": [1, 2, 3, 4]},
 }
 
-KEEP_UPDATED = {
-    "Sonavel": {},
-    "Gargadeth": {},
-    "Veskal": {},
-    "Brelshaza": {"Hard": [1, 2, 3, 4]},
-    "Kayangel": {"Hard": [1, 2, 3]},
-    "Akkan": {"Normal": [1, 2, 3], "Hard": [1, 2]},
-}
-
 
 class Filter:
     """Class for a query filter"""
@@ -444,11 +435,10 @@ def classify_class(log: dict) -> dict:
             # Looking for "30260" Barrage: Focus Fire and doing more than 10% damage
             playerSpecs[name] = (
                 "Barrage Enhancement"
-                    if "30260" in pDetail["skillDamage"].keys()
-                    and float(pDetail["skillDamage"]["30260"]["percent"]) > 10
+                if "30260" in pDetail["skillDamage"].keys()
+                and float(pDetail["skillDamage"]["30260"]["percent"]) > 10
                 else "Firepower Enhancement"
             )
-
         elif pClass == "Machinist":
             # Look for Evolutionary Legacy skill self buff
             playerSpecs[name] = (
@@ -502,3 +492,113 @@ def classify_weird(log: dict, specs: dict) -> bool:
         return True
 
     return False
+
+
+def scrape_log(
+    boss: str,
+    gate: int = None,
+    difficulty: str = None,
+    from_latest: bool = True,
+    from_scratch: bool = False,
+    log_batches: int = 20,
+    max_logs: int = 100000000,
+    patience: int = 100000000,
+    force: bool = False,
+    verbose: bool = False,
+):
+    click.echo(f"Fetching logs for {boss} {gate} {difficulty}")
+    click.echo(f"Starting from {'latest' if from_latest else 'oldest'}")
+
+    # Start timer
+    start = time.time()
+
+    # Make filter
+    filter = Filter(boss=boss, gate=gate, difficulty=difficulty)
+
+    if from_scratch:
+        click.echo("")
+        click.echo("=== Starting from scratch ===")
+        click.echo("WARNING: THIS OVERWRITES OLD LOGS")
+        if not force:
+            click.confirm("Are you sure you want to continue?", abort=True)
+        else:
+            click.echo("Continuing without confirmation in three seconds.")
+            time.sleep(3)
+
+        df = pd.DataFrame()
+        oldIDs = []
+        lastID = None
+        lastDate = None
+    else:
+        # Try to load old data file
+        try:
+            df = pd.read_csv(f"./data/{filter.to_name()}.csv", index_col=None)
+            oldIDs = df["id"].unique()
+
+            if not from_latest:
+                lastID = df["id"].min()
+                lastDate = df[df["id"] == lastID]["date"].values[0]
+            else:
+                lastID = None
+                lastDate = None
+
+        except FileNotFoundError:
+            df = pd.DataFrame()
+            oldIDs = []
+            lastID = None
+            lastDate = None
+
+    # Fetch logs until we hit max
+    newLogsParsed = 0
+    emptyRounds = 0
+    while newLogsParsed < max_logs and emptyRounds < patience:
+        logIDs = fetch_logIDs(
+            filter.to_dict(),
+            max_logs=log_batches,
+            parsed_logs=oldIDs,
+            last_id=lastID,
+            last_date=lastDate,
+            verbose=verbose,
+        )
+        if len(logIDs) == 0:
+            emptyRounds += 1
+            if verbose:
+                click.echo(
+                    f"Empty batch of logs, empty rounds: {emptyRounds}/{patience}."
+                )
+
+            continue
+        else:
+            emptyRounds = 0
+
+        if verbose:
+            click.echo("Scraping for log info")
+        for logID in logIDs:
+            if verbose:
+                click.echo(f"Working on log ID {logID}\r", nl=False)
+            log = fetch_log(logID)
+
+            df = pd.concat([df, log])
+            newLogsParsed += 1
+
+            # Update lastID and lastDate
+            lastID = logID
+            lastDate = log["date"].values[0]
+
+        oldIDs = df["id"].unique()
+
+        # If no logs have been found, quit
+        if len(logIDs) == 0:
+            click.echo("No more logs found.")
+            break
+
+        if verbose:
+            click.echo("Batch complete, saving logs.")
+        # Save to csv (saves once per batch)
+        df.to_csv(f"./data/{filter.to_name()}.csv", index=False)
+
+    # End timer
+    end = time.time()
+    click.echo(f"Time elapsed: {end - start:.2f} seconds")
+    click.echo(f"Logs scraped: {newLogsParsed}")
+    click.echo("==========")
