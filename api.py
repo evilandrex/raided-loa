@@ -634,6 +634,9 @@ def update_logs(
 
     # Fetch the logs
     click.echo(f"Updating logs for {filter}")
+    click.echo(f"Updating {len(toUpdate)} logs")
+    if len(builds) > 0:
+        click.echo(f"Updating logs for builds: {', '.join(builds)}")
     for id in toUpdate:
         if verbose:
             click.echo(f"Updating log ID {id}\r", nl=False)
