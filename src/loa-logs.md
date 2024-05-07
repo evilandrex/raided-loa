@@ -242,7 +242,9 @@ const durationMax = Generators.input(durationMaxRange);
 ```js weird toggle
 const filterWeirdToggle = Inputs.toggle({
   label: "Filter Weird",
-  value: !urlParams.get("filterWeird") === "false",
+  value: urlParams.get("filterWeird")
+    ? !urlParams.get("filterWeird") === "false"
+    : true,
 });
 const filterWeird = Generators.input(filterWeirdToggle);
 ```
@@ -250,7 +252,9 @@ const filterWeird = Generators.input(filterWeirdToggle);
 ```js dead toggle
 const filterDeadToggle = Inputs.toggle({
   label: "Filter Dead",
-  value: !urlParams.get("filterDead") === "false",
+  value: urlParams.get("filterDead")
+    ? !urlParams.get("filterDead") === "false"
+    : true,
 });
 const filterDead = Generators.input(filterDeadToggle);
 ```
@@ -258,7 +262,9 @@ const filterDead = Generators.input(filterDeadToggle);
 ```js star toggle
 const starToggle = Inputs.toggle({
   label: "Show Best Logs",
-  value: !urlParams.get("showStars") === "false",
+  value: urlParams.get("showStars")
+    ? !urlParams.get("showStars") === "false"
+    : true,
 });
 const showStars = Generators.input(starToggle);
 ```
