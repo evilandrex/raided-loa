@@ -1,7 +1,7 @@
 import click
 import api
-import pandas as pd
 import time
+from typing import List
 
 
 @click.group()
@@ -63,8 +63,6 @@ def boss(
     BOSS is required, GATE and DIFFICULTY should not be set unless necessary.
     """
     # TODO: Scrap until date
-    # TODO: Update specific classes
-    # TODO: Update specific IDs
 
     # Start timer
     start = time.time()
@@ -107,14 +105,48 @@ cli.add_command(boss)
 
 
 @click.command()
+@click.argument("boss", type=str, required=True)
+@click.argument("gate", type=int, required=False)
+@click.argument("difficulty", type=str, required=False)
+@click.option(
+    "--id",
+    default=[],
+    help="Update specific log IDs",
+    multiple=True,
+)
+@click.option(
+    "--build",
+    default=[],
+    help="Update specific builds",
+    multiple=True,
+)
+@click.option(
+    "--verbose",
+    "-v",
+    default=False,
+    is_flag=True,
+    help="Print extra information",
+)
 def update(
-    boss: str,
+    boss: str = None,
     gate: int = None,
     difficulty: str = None,
-    id: int = None,
-    build: str = None,
-    log_batches: int = 20,
+    *,
+    id: List[int] = [],
+    build: List[str] = [],
+    verbose: bool = False,
 ):
+    """
+    Update the log IDs or builds for the BOSS, GATE, and DIFFICULTY.
+
+    BOSS is required, GATE and DIFFICULTY should not be set unless necessary.
+    """
+    if len(id) == 0 and len(build) == 0:
+        raise ValueError("Either ID or build must be set.")
+
+    # Start timer
+    start = time.time()
+
     # Build a list of filter args
     bossArgs = []
     if boss == "all":
@@ -136,10 +168,14 @@ def update(
     for kwargs in bossArgs:
         api.update_logs(
             **kwargs,
-            id=id,
-            build=build,
-            log_batches=log_batches,
+            ids=id,
+            builds=build,
+            verbose=verbose,
         )
+
+    # End timer
+    end = time.time()
+    click.echo(f"Time elapsed: {end - start:.2f} seconds")
 
 
 cli.add_command(update)

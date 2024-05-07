@@ -505,7 +505,7 @@ def scrape_log(
     patience: int = 100000000,
     force: bool = False,
     verbose: bool = False,
-):
+) -> None:
     click.echo(f"Fetching logs for {boss} {gate} {difficulty}")
     click.echo(f"Starting from {'latest' if from_latest else 'oldest'}")
 
@@ -602,3 +602,43 @@ def scrape_log(
     click.echo(f"Time elapsed: {end - start:.2f} seconds")
     click.echo(f"Logs scraped: {newLogsParsed}")
     click.echo("==========")
+
+
+def update_logs(
+    boss: str,
+    gate: int = None,
+    difficulty: str = None,
+    *,
+    ids: List[int] = [],
+    builds: List[str] = [],
+    verbose: bool = False,
+) -> None:
+    """
+    Update the logs for a specific boss, gate, difficulty based on an ID or build
+    """
+    # Only one of IDs or builds should be set
+    if len(ids) > 0 and len(builds) > 0:
+        raise ValueError("Either ID or build must be set.")
+
+    # Load the data for the encounter
+    filter = Filter(boss=boss, gate=gate, difficulty=difficulty)
+    data = pd.read_csv(f"./data/{filter.to_name()}.csv")
+
+    # Get IDs to update
+    toUpdate = list(ids)
+    if len(builds) > 0:
+        toUpdate += list(data.loc[data['class'].isin(builds)]["id"].unique())
+
+    # Remove the to be updated IDs from data
+    data = data[~data["id"].isin(toUpdate)]
+
+    # Fetch the logs
+    for id in toUpdate:
+        if verbose:
+            click.echo(f"Updating log ID {id}")
+        log = fetch_log(id)
+
+        data = pd.concat([data, log])
+
+    # Save the data
+    data.to_csv(f"./data/{filter.to_name()}.csv", index=False)
