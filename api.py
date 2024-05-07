@@ -611,7 +611,6 @@ def update_logs(
     *,
     ids: List[int] = [],
     builds: List[str] = [],
-    verbose: bool = False,
 ) -> None:
     """
     Update the logs for a specific boss, gate, difficulty based on an ID or build
@@ -637,12 +636,12 @@ def update_logs(
     click.echo(f"Updating {len(toUpdate)} logs")
     if len(builds) > 0:
         click.echo(f"Updating logs for builds: {', '.join(builds)}")
-    for id in toUpdate:
-        if verbose:
-            click.echo(f"Updating log ID {id}\r", nl=False)
-        log = fetch_log(id)
 
-        data = pd.concat([data, log])
+    with click.progressbar(toUpdate) as bar:
+        for id in bar:
+            log = fetch_log(id)
+
+            data = pd.concat([data, log])
 
     # Save the data
     data.to_csv(f"./data/{filter.to_name()}.csv", index=False)

@@ -120,13 +120,6 @@ cli.add_command(boss)
     help="Update specific builds",
     multiple=True,
 )
-@click.option(
-    "--verbose",
-    "-v",
-    default=False,
-    is_flag=True,
-    help="Print extra information",
-)
 def update(
     boss: str = None,
     gate: int = None,
@@ -134,7 +127,6 @@ def update(
     *,
     id: List[int] = [],
     build: List[str] = [],
-    verbose: bool = False,
 ):
     """
     Update the log IDs or builds for the BOSS, GATE, and DIFFICULTY.
@@ -170,7 +162,6 @@ def update(
             **kwargs,
             ids=id,
             builds=build,
-            verbose=verbose,
         )
 
     # End timer
