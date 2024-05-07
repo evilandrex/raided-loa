@@ -8,5 +8,5 @@ Ark.
 To see how to use the CLI
 
 ```
-python api.py --help
+python scrape.py --help
 ```
