@@ -441,15 +441,11 @@ def classify_class(log: dict) -> dict:
                 else "Pistoleer"
             )
         elif pClass == "Artillerist":
-            # Looking for Barrage skills
+            # Looking for "30260" Barrage: Focus Fire and doing more than 10% damage
             playerSpecs[name] = (
                 "Barrage Enhancement"
-                if any(
-                    [
-                        "Barrage: " in skillCatalog[id]["name"]
-                        for id in pDetail["skillDamage"].keys()
-                    ]
-                )
+                    if "30260" in pDetail["skillDamage"].keys()
+                    and float(pDetail["skillDamage"]["30260"]["percent"]) > 10
                 else "Firepower Enhancement"
             )
 
@@ -461,6 +457,7 @@ def classify_class(log: dict) -> dict:
                 else "Arthetinean Skill"
             )
         elif pClass == "Gunslinger":
+            # Looking for Sharpshooter skill
             playerSpecs[name] = (
                 "Peacemaker" if "38110" in pDetail["skillDamage"] else "Time to Hunt"
             )
