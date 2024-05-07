@@ -66,15 +66,14 @@ In general, you should compare classes based on their box (the colored part), as
 that's where a majority of players will fall, in terms of performance. Note that
 we do not account for differences in gear outside of ilevel (which means tripods,
 gems, elixirs, and transcendence will affect this). Indeed player skill matters
-quite a bit, in terms of performance. If you would like to compare performance
+quite a bit. If you would like to compare performance
 with more similar gear, you can try to reduce the ilevel ranges in the advanced
 options to cut out certain progression systems. Be careful of the low sample
 sizes when doing this.
 
-If you would like to look at
-for a "reasonable ceiling" performance for each class, the right whisker
-provides a reasonable estimate. Not that this "reasonable ceiling" does not mean
-you cannot perform above it, this is exemplified by the stars that show off the
+If you would like to look at a "reasonable ceiling" performance for each class,
+the right whisker provides a reasonable estimate. Note that this "reasonable ceiling" does not mean
+you cannot perform above it, this is exemplified by the stars that show the
 literal best performance given the filters.
 
 ## Method
@@ -82,8 +81,9 @@ literal best performance given the filters.
 We scrape data from [Faust's Lost Ark logs](https://logs.fau.dev/logs) every
 night and classify each player in the logs based on their build. We produce
 box plots using this data. The boxplots follow the typical procedures. It should
-be noted that the whiskers (Q1 and Q3) are truncated to the minimum and maximum
-values in the dataset to guarantee that it represents a possible value.
+be noted that the whiskers [Q1 - 1.5 * IQR, Q3 + 1.5 * IQR] are truncated to the
+minimum and maximum values for that build to guarantee that it represents a
+possible value.
 
 The default filters, in general, seek to provide a representative dataset for on
 ilevel players in the typical situations in the current balance patch.
@@ -105,26 +105,26 @@ Most builds are binary under a class, so if a player doesn't meet the criteria,
 they're the other build. All builds (except for Princess Maker) are named after
 their main engraving.
 
-- Berserker: Checking for the Mayhem buff.
-- Destroyer: Checking for the special Gravity Training weapon attack.
-- Gunlancer: If they do less than 5% damage, they're Princess Maker. If they have Nightmare or Hallucination set they're Combat Readiness.
+- Berserker: Checking for the Mayhem buff
+- Destroyer: Checking for the special Gravity Training weapon attack
+- Gunlancer: If they do less than 5% damage, they're Princess Maker; if they have Nightmare or Hallucination set they're Combat Readiness
 - Paladin: If they do more than 10% of the team damage, they're Judgment.
-- Slayer: If they have the Predator buff.
+- Slayer: Checking for the Predator buff
 
 ---
 
 - Arcanist: If they did damage with the card Emperor
 - Summoner: If they did damage with the skill Kelsion (Communication Overflow)
 - Bard: If they do more than 10% of the team damage, they're True Courage
-- Sorceress: Checking for the Igniter buff.
+- Sorceress: Checking for the Igniter buff
 
 ---
 
-- Wardancer: Checking for the Esoteric Skills
+- Wardancer: Checking for Esoteric Skills
 - Scrapper: Checking for the unique Shock Training buff
 - Soulfist: Checking for the unique Robust Spirit buff
 - Glaivier: Checking for the Pinnacle buff
-- Striker: Checking for the skill Call of the Wind God for Esoteric Flurry
+- Striker: Checking for the skill Call of the Wind God (Esoteric Flurry)
 - Breaker: Checking for the special Asura weapon attack.
 
 ---
@@ -137,15 +137,15 @@ their main engraving.
 ---
 
 - Sharpshooter: Checking for the Loyal Companion buff
-- Deadeye: Check for the Enhanced Weapon buff
-- Artillerist: Check for the Barrage skills
-- Machinist: Check for the Evolutionary Legacy buff
-- Gunslinger: Check for Sharpshooter skill (Peacemaker)
+- Deadeye: Checking for the Enhanced Weapon buff
+- Artillerist: Checking for the Barrage skills
+- Machinist: Checking for the Evolutionary Legacy buff
+- Gunslinger: Checking for Sharpshooter skill (Peacemaker)
 
 ---
 
 - Artist: If they do more than 10% of the team damage, they're Recurrence.
-- Aeromancer: Check for Sunshower synergy buff on their own Sunshower skill (Wind Fury)
+- Aeromancer: Checking for the Sunshower synergy buff on their own Sunshower skill (Wind Fury)
 </details>
 
 The data scraping is written in Python and the site/visualization is written
