@@ -4,7 +4,6 @@ import pandas as pd
 import time
 
 
-
 @click.group()
 def cli():
     pass
@@ -72,7 +71,7 @@ def boss(
 
     # Build a list of filter args
     bossArgs = []
-    if boss == all:
+    if boss == "all":
         for bossName, info in api.BOSSES.items():
             # If info is empty, it's probably a guardian
             if info == {}:
@@ -118,7 +117,7 @@ def update(
 ):
     # Build a list of filter args
     bossArgs = []
-    if boss == all:
+    if boss == "all":
         for bossName, info in api.BOSSES.items():
             # If info is empty, it's probably a guardian
             if info == {}:
