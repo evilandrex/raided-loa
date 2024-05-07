@@ -629,6 +629,7 @@ svg
 const tooltip = d3
   .select("main")
   .append("div")
+  .attr("class", "tooltip")
   .style("position", "absolute")
   .style("opacity", 0);
 
@@ -674,14 +675,10 @@ g.append("rect")
     svg.selectAll(".mouseLine").attr("visibility", "visible");
   })
   .on("mouseout", () => {
-    tooltip.style("opacity", 0);
-    // Move tooltip really really far away
-    tooltip.style("left", "-9999px");
+    d3.selectAll(".tooltip").attr("opacity", 0).style("left", "-9999px");
+
     // Lighten row
     g.selectAll(".rowMouseBox").attr("fill", "transparent");
-
-    // Reset mouse
-    d3.select(this).style("cursor", "");
   })
   .on("mousemove", (event) => {
     if (event.offsetX > width / 2) {
@@ -731,8 +728,7 @@ g.append("path")
     d3.select(this).style("cursor", "");
 
     // Hide tooltip
-    tooltip.style("opacity", 0);
-    tooltip.style("left", "-9999px");
+    d3.selectAll(".tooltip").attr("opacity", 0).style("left", "-9999px");
   })
   .on("mousemove", (event) => {
     if (event.offsetX > width / 2) {
