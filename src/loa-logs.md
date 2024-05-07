@@ -697,9 +697,9 @@ g.append("path")
   .attr("fill", "var(--theme-foreground-focus)")
   .attr("opacity", "0.5")
   .attr("visibility", (d) => (showStars ? "visible" : "hidden"))
+  .style("cursor", "pointer")
   .on("mouseover", (event, d) => {
     d3.select(event.target).attr("opacity", "1");
-    d3.select(this).style("cursor", "pointer");
 
     // Find the link to the best log
     let bestLink = "https://logs.fau.dev/log/";
@@ -727,9 +727,6 @@ g.append("path")
     // Hide tooltip
     tooltip.style("opacity", 0);
     tooltip.style("left", "-9999px");
-
-    // Reset mouse
-    d3.select(this).style("cursor", "");
   })
   .on("mousemove", (event) => {
     if (event.offsetX > width / 2) {
