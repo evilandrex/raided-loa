@@ -52,6 +52,10 @@ toc: false
     </div>
 </div>
 
+```js queryString processor
+const urlParams = new URLSearchParams(window.location.search);
+```
+
 ```js boss selector
 const guardians = ["Sonavel", "Gargadeth", "Veskal"];
 
@@ -65,7 +69,7 @@ const raids = {
 let bosses = [null, ...guardians, ...Object.keys(raids)];
 
 const bossSelect = Inputs.select(bosses, {
-  value: null,
+  value: urlParams.get("boss"),
   label: "Boss",
 });
 const selectedBoss = Generators.input(bossSelect);
@@ -79,16 +83,17 @@ const reqDiff =
   selectedBoss == "Kayangel" ||
   selectedBoss === null;
 
-const diffValue =
-  selectedBoss == "Kakul Saydon"
-    ? "Normal"
-    : selectedBoss == "Brelshaza"
-    ? "Hard"
-    : selectedBoss == "Kayangel"
-    ? "Hard"
-    : reqDiff
-    ? null
-    : "Normal";
+const diffValue = urlParams.get("difficulty")
+  ? urlParams.get("difficulty")
+  : selectedBoss == "Kakul Saydon"
+  ? "Normal"
+  : selectedBoss == "Brelshaza"
+  ? "Hard"
+  : selectedBoss == "Kayangel"
+  ? "Hard"
+  : reqDiff
+  ? null
+  : "Normal";
 
 const difficulties = Object.keys(raids).includes(selectedBoss)
   ? ["Normal", "Hard"]
@@ -107,7 +112,11 @@ const gates = Object.keys(raids).includes(selectedBoss)
   ? raids[selectedBoss]
   : [];
 const gateRadio = Inputs.radio(gates, {
-  value: gates.length <= 1 ? null : gates[0],
+  value: urlParams.get("gate")
+    ? Number(urlParams.get("gate"))
+    : gates.length <= 1
+    ? null
+    : gates[0],
   label: "Gate",
   disabled: gates.length === 1,
 });
@@ -124,6 +133,7 @@ const sortSelect = Inputs.select(
     ["Max (the best!)", "Max"],
   ]),
   {
+    value: urlParams.get("sort") ? urlParams.get("sort") : "Median",
     label: "",
   }
 );
@@ -162,13 +172,17 @@ const selectedPatch = Generators.input(patchSelect);
 ```js date selectors
 const dateStartSelect = Inputs.date({
   label: "Start Date",
-  value: selectedPatch[0],
+  value: urlParams.get("dateStart")
+    ? Number(urlParams.get("dateStart"))
+    : selectedPatch[0],
 });
 const dateStart = Generators.input(dateStartSelect);
 
 const dateEndSelect = Inputs.date({
   label: "End Date",
-  value: selectedPatch[1],
+  value: urlParams.get("dateEnd")
+    ? Number(urlParams.get("dateEnd"))
+    : selectedPatch[1],
 });
 const dateEnd = Generators.input(dateEndSelect);
 ```
@@ -191,13 +205,17 @@ const iLevelDefaults = bossIlevelDefaults[selectedBoss]
     : bossIlevelDefaults[selectedBoss]
   : [1580, 1675];
 const iLevelMinRange = Inputs.range([1580, 1675], {
-  value: iLevelDefaults[0],
+  value: urlParams.get("iLevelMin")
+    ? Number(urlParams.get("iLevelMin"))
+    : iLevelDefaults[0],
   step: 1,
 });
 const iLevelMin = Generators.input(iLevelMinRange);
 
 const iLevelMaxRange = Inputs.range([1580, 1675], {
-  value: iLevelDefaults[1],
+  value: urlParams.get("iLevelMax")
+    ? Number(urlParams.get("iLevelMax"))
+    : iLevelDefaults[1],
   step: 1,
 });
 const iLevelMax = Generators.input(iLevelMaxRange);
@@ -205,13 +223,17 @@ const iLevelMax = Generators.input(iLevelMaxRange);
 
 ```js duration ranges
 const durationMinRange = Inputs.range([0, 3600], {
-  value: 120,
+  value: urlParams.get("durationMin")
+    ? Number(urlParams.get("durationMin"))
+    : 120,
   step: 1,
 });
 const durationMin = Generators.input(durationMinRange);
 
 const durationMaxRange = Inputs.range([0, 3600], {
-  value: 3600,
+  value: urlParams.get("durationMax")
+    ? Number(urlParams.get("durationMax"))
+    : 3600,
   step: 1,
 });
 const durationMax = Generators.input(durationMaxRange);
@@ -220,7 +242,7 @@ const durationMax = Generators.input(durationMaxRange);
 ```js weird toggle
 const filterWeirdToggle = Inputs.toggle({
   label: "Filter Weird",
-  value: true,
+  value: !urlParams.get("filterWeird") === "false",
 });
 const filterWeird = Generators.input(filterWeirdToggle);
 ```
@@ -228,7 +250,7 @@ const filterWeird = Generators.input(filterWeirdToggle);
 ```js dead toggle
 const filterDeadToggle = Inputs.toggle({
   label: "Filter Dead",
-  value: true,
+  value: !urlParams.get("filterDead") === "false",
 });
 const filterDead = Generators.input(filterDeadToggle);
 ```
@@ -236,7 +258,7 @@ const filterDead = Generators.input(filterDeadToggle);
 ```js star toggle
 const starToggle = Inputs.toggle({
   label: "Show Best Logs",
-  value: true,
+  value: !urlParams.get("showStars") === "false",
 });
 const showStars = Generators.input(starToggle);
 ```
