@@ -180,3 +180,9 @@ variance from factors other than the build itself. However, it is difficult to
 determine the exact cause of performance differences without more detailed data.
 This means that the data should be used as a rough guide of relative balance and
 not an exact representation of the true ranks of each build.
+
+## Acknowledgements
+
+Thanks to Faust for providing the logs and the API. Thanks to Snow for creating
+Lost Ark Logs. Thanks for PoisonSandwich and Kennethyu for inspiration and early
+feedback.
