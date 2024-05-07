@@ -118,6 +118,7 @@ const gate = Generators.input(gateRadio);
 const sortSelect = Inputs.select(
   new Map([
     ["Median (middle performance)", "Median"],
+    ["Mean (alternate middle, good for small samples)", "Mean"],
     ["Upper (reasonable ceiling)", "Upper"],
     ["Lower (reasonable floor)", "Lower"],
     ["Max (the best!)", "Max"],
@@ -402,6 +403,13 @@ g.append("line")
   .attr("y2", (d) => yScale(d.Build) + yScale.bandwidth())
   .attr("stroke", "white");
 
+// Add mean dot
+g.append("circle")
+  .attr("cx", (d) => xScale(d.Mean))
+  .attr("cy", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
+  .attr("r", 3)
+  .attr("fill", "white");
+
 // Add lower whisker
 g.append("line")
   .attr("x1", (d) => xScale(d.Lower))
@@ -539,6 +547,7 @@ g.append("rect")
         <div>Floor: ${d3.format(".3s")(d.Lower)}</div>
         <div>Q1: ${d3.format(".3s")(d.Q1)}</div>
         <div>Median: ${d3.format(".3s")(d.Median)}</div>
+        <div>Mean: ${d3.format(".3s")(d.Mean)}</div>
         <div>Q3: ${d3.format(".3s")(d.Q3)}</div>
         <div>Ceiling: ${d3.format(".3s")(d.Upper)}</div>
         <div>Best: ${d3.format(".3s")(d.Max)}</div>
