@@ -31,7 +31,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Scrape all bosses
-        run: python scrape.py update --from-latest --max-logs 10000 --patience 5
+        run: python scrape.py all --from-latest --max-logs 10000 --patience 5
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
