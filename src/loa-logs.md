@@ -131,20 +131,31 @@ const selectedSort = Generators.input(sortSelect);
 ```
 
 ```js patch selector
-const patchSelect = Inputs.select(
-  new Map([
-    ["April 2024 - Mage Balance (Current)", [`2024-04-17`, Date.now()]],
-    ["March 2024 - Breaker", [`2024-03-20`, `2024-04-16`]],
-    ["January 2024 - Major Balance", [`2023-11-14`, `2024-03-19`]],
-    ["November 2023 - Souleater", [`2023-09-13`, `2023-11-13`]],
-    ["September 2023 - Minor Balance", [`2023-08-16`, `2023-09-12`]],
-    ["August 2023 - Aeromancer", [`2022-02-11`, `2023-08-15`]],
-    ["All Patches", [`2022-02-11`, Date.now()]],
-  ]),
-  {
-    label: "",
-  }
-);
+const patches = new Map([
+  ["April 2024 - Mage Balance (Current)", [new Date(`2024-04-17`), Date.now()]],
+  ["March 2024 - Breaker", [new Date(`2024-03-20`), new Date(`2024-04-16`)]],
+  [
+    "January 2024 - Major Balance",
+    [new Date(`2023-11-14`), new Date(`2024-03-19`)],
+  ],
+  [
+    "November 2023 - Souleater",
+    [new Date(`2023-09-13`), new Date(`2023-11-13`)],
+  ],
+  [
+    "September 2023 - Minor Balance",
+    [new Date(`2023-08-16`), new Date(`2023-09-12`)],
+  ],
+  [
+    "August 2023 - Aeromancer",
+    [new Date(`2022-02-11`), new Date(`2023-08-15`)],
+  ],
+  ["All Patches", [new Date(`2022-02-11`), Date.now()]],
+]);
+
+const patchSelect = Inputs.select(patches, {
+  label: "",
+});
 const selectedPatch = Generators.input(patchSelect);
 ```
 
@@ -228,6 +239,76 @@ const starToggle = Inputs.toggle({
   value: true,
 });
 const showStars = Generators.input(starToggle);
+```
+
+```js query string maker
+let queryUrl = "https://raided.pro/loa-logs?";
+
+// If a boss is selected
+if (selectedBoss) {
+  queryUrl += `boss=${selectedBoss}`;
+  if (difficulty) {
+    queryUrl += `&difficulty=${difficulty}`;
+  }
+  if (gate) {
+    queryUrl += `&gate=${gate}`;
+  }
+}
+
+// Add sort if not default
+if (selectedSort !== "Median") {
+  queryUrl += `&sort=${selectedSort}`;
+}
+
+// Add date if not default
+const defaultPatch = patches.values().next();
+if (
+  Math.abs(dateStart.getTime() - patches.values().next().value[0].getTime()) >
+  1000
+) {
+  queryUrl += `&dateStart=${dateStart.getTime()}`;
+}
+
+// Truncate the end date to just today
+let today = new Date(patches.values().next().value[1]);
+today.setHours(0, 0, 0, 0);
+
+if (Math.abs(dateEnd.getTime() - today.getTime()) > 18000000) {
+  queryUrl += `&dateEnd=${dateEnd.getTime()}`;
+}
+
+// Add ilevel range if not default
+if (iLevelMin !== iLevelDefaults[0]) {
+  queryUrl += `&iLevelMin=${iLevelMin}`;
+}
+
+if (iLevelMax !== iLevelDefaults[1]) {
+  queryUrl += `&iLevelMax=${iLevelMax}`;
+}
+
+// Add weird toggle flag if not default
+if (!filterWeird) {
+  queryUrl += `&filterWeird=${filterWeird}`;
+}
+
+// Add dead toggle flag if not default
+if (!filterDead) {
+  queryUrl += `&filterDead=${filterDead}`;
+}
+
+// Add duration range if not default
+if (durationMin !== 120) {
+  queryUrl += `&durationMin=${durationMin}`;
+}
+
+if (durationMax !== 3600) {
+  queryUrl += `&durationMax=${durationMax}`;
+}
+
+// Add star toggle flag if not default
+if (!showStars) {
+  queryUrl += `&showStars=${showStars}`;
+}
 ```
 
 ```js get data
@@ -697,6 +778,23 @@ svg
   .attr("font-size", "12px")
   .attr("fill", "var(--theme-foreground-faintest)")
   .text(`Total logs: ${nLogs}`);
+
+// Add button to copy url to clipboard
+svg
+  .append("text")
+  .attr("transform", `translate(${margins.left}, ${height - margins.bottom})`)
+  .attr("text-anchor", "start")
+  .attr("font-family", "var(--sans-serif)")
+  .attr("fill", "var(--theme-foreground-focus)")
+  .attr("font-size", "12px")
+  .text("Share: Copy URL")
+  .style("cursor", "pointer")
+  .on("click", (event) => {
+    navigator.clipboard.writeText(queryUrl);
+
+    // Change our text to "copied"
+    d3.select(event.target).text("Share: Copied!");
+  });
 
 if (selectedBoss) {
   display(svg.node());
