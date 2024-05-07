@@ -529,6 +529,9 @@ g.append("rect")
   .on("mouseover", (event, d) => {
     tooltip.style("opacity", 1).html(`
       <div class="card" style="padding: 7px;">
+        <div>Rank ${selectedClasses.indexOf(d) + 1}/${
+      selectedClasses.length
+    }</div>
         <div>${d.Build.split(" (")[0]}</div>
         <div>${d.Build.split(" (")[1].replace(")", "")} logs</div>
         <br/>
