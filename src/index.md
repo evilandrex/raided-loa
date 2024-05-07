@@ -52,8 +52,8 @@ toc: false
 ## TL;DR
 
 [Click here to see the charts](https://raided.pro/loa-logs). We rank classes
-based on their overall performance. The boxes represent a reasonable range for
-the typical performance of each build. Compare classes primarily based on these
+based on their DPS. The boxes represent a reasonable range for
+the typical DPS of each build. Compare classes primarily based on these
 boxes, farther right is better. The right whisker provides a reasonable ceiling,
 but do not expect most players to reach this. There are many factors we do not
 account for such as gear, player skill, and supports.
