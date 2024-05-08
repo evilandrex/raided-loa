@@ -580,6 +580,7 @@ svg
   .append("g")
   .attr("visibility", width > minWidth ? "visible" : "hidden")
   .attr("transform", `translate(${margins.left + yAxisWidth}, 0)`)
+  .attr("pointer-events", "none")
   .call(yAxis)
   .selectAll("text")
   .attr("font-size", "14px")
@@ -605,7 +606,7 @@ svg
   .text("Build (Logs)");
 
 // Add branding at the bottom right
-let brandString = `Raided Lost Ark - ${new Date().toLocaleDateString()} - ${selectedBoss}`;
+let brandString = `Raided.pro Lost Ark - ${new Date().toLocaleDateString()} - ${selectedBoss}`;
 if (difficulty) {
   brandString += ` - ${difficulty[0]}M - G${gate}`;
 }
@@ -623,6 +624,7 @@ svg
   .attr("font-family", "var(--sans-serif)")
   .attr("font-size", "12px")
   .attr("fill", "var(--theme-foreground-faintest)")
+  .attr("pointer-events", "none")
   .text(brandString);
 
 // Prepare tooltip
@@ -634,7 +636,11 @@ const tooltip = d3
   .style("opacity", 0);
 
 // Draw vertical line following mouse
-svg.append("rect").attr("class", "mouseLine").attr("fill", "black");
+svg
+  .append("rect")
+  .attr("class", "mouseLine")
+  .attr("fill", "black")
+  .attr("pointer-events", "none");
 
 // Add invisible box to support mouse over
 g.append("rect")
