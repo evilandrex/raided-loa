@@ -13,7 +13,17 @@ export default {
   ],
 
   // Content to add to the head of the page, e.g. for a favicon:
-  head: '<link rel="icon" href="AndrexTransparentSquare.png" type="image/png" sizes="32x32">',
+  head: `
+    <link rel="icon" href="AndrexTransparentSquare.png" type="image/png" sizes="32x32">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MWETBXPKV2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+    
+      gtag("config", "G-MWETBXPKV2");
+    </script>
+  `,
 
   // Some additional configuration options and their defaults:
   theme: ["cotton", "ink"], // try "light", "dark", "slate", etc.
