@@ -187,3 +187,6 @@ not an exact representation of the true ranks of each build.
 Thanks to Faust for providing the logs and the API. Thanks to Snow for creating
 Lost Ark Logs. Thanks for PoisonSandwich and Kennethnyu for inspiration and early
 feedback.
+
+[![Daily Log Scrape](https://github.com/evilandrex/raided-loa-scraper/actions/workflows/scrape_daily.yml/badge.svg)](https://github.com/evilandrex/raided-loa-scraper/actions/workflows/scrape_daily.yml)
+[![Deploy Observable Framework to Pages](https://github.com/evilandrex/raided-loa/actions/workflows/deploySite.yml/badge.svg)](https://github.com/evilandrex/raided-loa/actions/workflows/deploySite.yml)
