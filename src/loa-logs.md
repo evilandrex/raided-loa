@@ -391,6 +391,24 @@ if (selectedBoss != null) {
 }
 ```
 
+```js log statistics
+let latestLog;
+let nLogs;
+if (selectedBoss) {
+  nLogs = data
+    .rollup({
+      ids: aq.op.array_agg_distinct("id"),
+    })
+    .array("ids")[0].length;
+
+  latestLog = data
+    .select("date")
+    .rollup({ latest: aq.op.max("date") })
+    .array("latest")[0]
+    .toLocaleDateString();
+}
+```
+
 ```js plot dimensions
 const width = Generators.width(document.querySelector("main"));
 const plotHeight = 850;
@@ -711,21 +729,19 @@ g.append("path")
     d3.select(event.target).attr("opacity", "1");
 
     // Find the link to the best log
-    let bestLink = "https://logs.fau.dev/log/";
-    bestLink += data
-      .filter(
-        aq.escape(
-          (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
-        )
-      )
-      .array("id")[0];
+    // let bestLink = "https://logs.fau.dev/log/";
+    // bestLink += data
+    //   .filter(
+    //     aq.escape(
+    //       (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
+    //     )
+    //   )
+    //   .array("id")[0];
 
     tooltip.style("opacity", 1).html(`
       <div class="card" style="padding: 7px;">
         <div>${d.Build.split(" (")[0]}</div>
         <div>${d3.format(".3s")(d.Max)} DPS</div>
-
-        ${bestLink}
       </div>
     `);
   })
@@ -744,21 +760,21 @@ g.append("path")
     }
 
     tooltip.style("top", event.pageY - 30 + "px");
-  })
-  .on("click", (event, d) => {
-    window.open(
-      `https://logs.fau.dev/log/${
-        data
-          .filter(
-            aq.escape(
-              (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
-            )
-          )
-          .array("id")[0]
-      }`,
-      "_blank"
-    );
   });
+// .on("click", (event, d) => {
+//   window.open(
+//     `https://logs.fau.dev/log/${
+//       data
+//         .filter(
+//           aq.escape(
+//             (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
+//           )
+//         )
+//         .array("id")[0]
+//     }`,
+//     "_blank"
+//   );
+// });
 
 svg
   .on("mousemove", (event) => {
@@ -883,7 +899,7 @@ if (selectedBoss) {
 }
 ```
 
-## ${selectedBoss ? "Record Logs" : ""}
+<!-- ## ${selectedBoss ? "Record Logs" : ""}
 
 ```js record logs table
 // Unnest class specs
@@ -952,22 +968,4 @@ if (selectedBoss) {
     })
   );
 }
-```
-
-```js log statistics
-let latestLog;
-let nLogs;
-if (selectedBoss) {
-  nLogs = data
-    .rollup({
-      ids: aq.op.array_agg_distinct("id"),
-    })
-    .array("ids")[0].length;
-
-  latestLog = data
-    .select("date")
-    .rollup({ latest: aq.op.max("date") })
-    .array("latest")[0]
-    .toLocaleDateString();
-}
-```
+``` -->
