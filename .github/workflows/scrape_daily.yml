@@ -14,8 +14,43 @@ concurrency:
 
 name: Daily Log Scrape
 jobs:
-  scrape:
-    name: Scrape latest logs
+  scrape_latest:
+    strategy:
+      matrix:
+        encounter:
+          [
+            Sonavel,
+            Gargadeth,
+            Veskal,
+            Brelshaza 1 Hard,
+            Brelshaza 2 Hard,
+            Brelshaza 3 Hard,
+            Brelshaza 4 Hard,
+            Kayangel 1 Hard,
+            Kayangel 2 Hard,
+            Kayangel 3 Hard,
+            Akkan 1 Normal,
+            Akkan 2 Normal,
+            Akkan 3 Normal,
+            Akkan 1 Hard,
+            Akkan 2 Hard,
+            Akkan 3 Hard,
+            Ivory 1 Normal,
+            Ivory 2 Normal,
+            Ivory 3 Normal,
+            Ivory 4 Normal,
+            Ivory 1 Hard,
+            Ivory 2 Hard,
+            Ivory 3 Hard,
+            Ivory 4 Hard,
+            Thaemine 1 Normal,
+            Thaemine 2 Normal,
+            Thaemine 3 Normal,
+            Thaemine 1 Hard,
+            Thaemine 2 Hard,
+            Thaemine 3 Hard,
+            Thaemine 4 Hard,
+          ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -31,7 +66,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Scrape all bosses
-        run: python scrape.py boss all --from-latest --patience 5
+        run: python scrape.py boss ${{ matrix.encounter }} --from-latest --patience 5
+
+      - name: Pull latest changes
+        run: git pull
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
