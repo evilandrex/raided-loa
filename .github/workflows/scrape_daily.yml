@@ -1,7 +1,7 @@
 # /.github/workflows/scrape_daily.yml
 on:
   schedule:
-    - cron: "0 12 * * *" # every day at 12am
+    - cron: "0 10 * * *" # every day at 12am
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to push to the repository
