@@ -1,5 +1,6 @@
 # Changelogs
 
+- May 9, 2024 - Top 5 logs removed, data all anonymized.
 - May 8, 2024 - Initial release.
 
 # Future
