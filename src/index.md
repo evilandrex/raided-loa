@@ -185,7 +185,7 @@ not an exact representation of the true ranks of each build.
 ## Acknowledgements
 
 Thanks to Faust for providing the logs and the API. Thanks to Snow for creating
-Lost Ark Logs. Thanks for PoisonSandwich and Kennethnyu for inspiration and early
+Lost Ark Logs. Thanks to PoisonSandwich and Kennethnyu for inspiration and early
 feedback.
 
 [![Daily Log Scrape](https://github.com/evilandrex/raided-loa-scraper/actions/workflows/scrape_daily.yml/badge.svg)](https://github.com/evilandrex/raided-loa-scraper/actions/workflows/scrape_daily.yml)
