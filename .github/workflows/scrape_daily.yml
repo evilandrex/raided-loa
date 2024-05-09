@@ -16,6 +16,7 @@ name: Daily Log Scrape
 jobs:
   scrape_latest:
     strategy:
+      fail-fast: false
       matrix:
         encounter:
           [
