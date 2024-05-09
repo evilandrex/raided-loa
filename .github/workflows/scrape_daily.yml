@@ -73,6 +73,7 @@ jobs:
         uses: Wandalen/wretry.action@v3
         with:
           attempt_limit: 5
+          attempt_delay: 5000
           action: EndBug/add-and-commit@v9
           with: |
             message: "Scrape latest logs from ${{ matrix.encounter }}"
