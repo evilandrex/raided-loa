@@ -1,5 +1,6 @@
 # Changelogs
 
+- May 10, 2024 - Top 5 is back, updates still paused now with warning.
 - May 9, 2024 - Top 5 logs removed, data all anonymized, updates paused.
 - May 8, 2024 - Initial release.
 

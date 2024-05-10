@@ -5,6 +5,8 @@ toc: false
 
 <h1>Raided Lost Ark</h1>
 
+<div class="warning">Data scraping is paused for a few days until Faust updates the API.</div>
+
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card">
       <h1>Select a fight</h1>
@@ -44,8 +46,8 @@ toc: false
         Default advanced options are intended to show relevant logs from 
         characters at the right ilevel to do that content (not overleveled). You
         can click the stars to see the best log for each build. You can filter
-        the builds shown in the chart using the class statistics table. Top 5 
-        logs are not currently available.
+        the builds shown in the chart using the class statistics table. Data
+        is updated nightly.
       </details>
     </div>
 </div>
@@ -897,7 +899,7 @@ if (selectedBoss) {
 }
 ```
 
-<!-- ## ${selectedBoss ? "Record Logs" : ""}
+## ${selectedBoss ? "Record Logs" : ""}
 
 ```js record logs table
 // Unnest class specs
@@ -966,4 +968,4 @@ if (selectedBoss) {
     })
   );
 }
-``` -->
+```
