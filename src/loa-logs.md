@@ -729,19 +729,20 @@ g.append("path")
     d3.select(event.target).attr("opacity", "1");
 
     // Find the link to the best log
-    // let bestLink = "https://logs.fau.dev/log/";
-    // bestLink += data
-    //   .filter(
-    //     aq.escape(
-    //       (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
-    //     )
-    //   )
-    //   .array("id")[0];
+    let bestLink = "https://logs.fau.dev/log/";
+    bestLink += data
+      .filter(
+        aq.escape(
+          (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
+        )
+      )
+      .array("id")[0];
 
     tooltip.style("opacity", 1).html(`
       <div class="card" style="padding: 7px;">
         <div>${d.Build.split(" (")[0]}</div>
         <div>${d3.format(".3s")(d.Max)} DPS</div>
+        <div>${bestLink}</div>
       </div>
     `);
   })
@@ -760,21 +761,21 @@ g.append("path")
     }
 
     tooltip.style("top", event.pageY - 30 + "px");
-  });
-// .on("click", (event, d) => {
-//   window.open(
-//     `https://logs.fau.dev/log/${
-//       data
-//         .filter(
-//           aq.escape(
-//             (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
-//           )
-//         )
-//         .array("id")[0]
-//     }`,
-//     "_blank"
-//   );
-// });
+  })
+  .on("click", (event, d) => {
+      window.open(
+        `https://logs.fau.dev/log/${
+          data
+            .filter(
+              aq.escape(
+                (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
+              )
+            )
+            .array("id")[0]
+        }`,
+        "_blank"
+      );
+    });
 
 svg
   .on("mousemove", (event) => {
