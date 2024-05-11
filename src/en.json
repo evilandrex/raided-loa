@@ -51,6 +51,9 @@
   "Ivory": "Ivory Tower",
   "Thaemine": "Thaemine",
 
+  "rank": "Rank",
+  "selected": "Selected",
+  "differential": "Differential",
   "yAxisLabel": "Builds (Logs)",
   "xAxisLabel": "DPS (millions)",
   "xAxisTickUnit": "M",
