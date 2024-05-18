@@ -5,8 +5,6 @@ toc: false
 
 <h1>Raided Lost Ark</h1>
 
-<div class="warning">Data scraping is paused for a few days until Faust updates the API.</div>
-
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card">
       <h1>Select a fight</h1>
@@ -763,19 +761,19 @@ g.append("path")
     tooltip.style("top", event.pageY - 30 + "px");
   })
   .on("click", (event, d) => {
-      window.open(
-        `https://logs.fau.dev/log/${
-          data
-            .filter(
-              aq.escape(
-                (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
-              )
+    window.open(
+      `https://logs.fau.dev/log/${
+        data
+          .filter(
+            aq.escape(
+              (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
             )
-            .array("id")[0]
-        }`,
-        "_blank"
-      );
-    });
+          )
+          .array("id")[0]
+      }`,
+      "_blank"
+    );
+  });
 
 svg
   .on("mousemove", (event) => {
