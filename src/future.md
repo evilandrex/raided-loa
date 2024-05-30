@@ -13,3 +13,5 @@
 - Maybe add more sort options
 - Look into table options for records logs (sorting #1, disable selection)
 - KR translation
+- Add Sidereal as weird (https://logs.fau.dev/log/1295145)
+- Label who is the uploader
