@@ -193,7 +193,8 @@ Thanks to Faust for providing the logs and the API. Thanks to Snow for creating
 Lost Ark Logs. Thanks to PoisonSandwich and Kennethnyu for inspiration and early
 feedback.
 
-Contact evilandrex on Discord for any questions or feedback.
+Contact evilandrex on Discord for any questions or feedback for this site 
+specifically.
 
 [![Daily Log Scrape](https://github.com/evilandrex/raided-loa-scraper/actions/workflows/scrape_daily.yml/badge.svg)](https://github.com/evilandrex/raided-loa-scraper/actions/workflows/scrape_daily.yml)
 [![Deploy Observable Framework to Pages](https://github.com/evilandrex/raided-loa/actions/workflows/deploySite.yml/badge.svg)](https://github.com/evilandrex/raided-loa/actions/workflows/deploySite.yml)
