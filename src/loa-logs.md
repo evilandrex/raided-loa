@@ -63,6 +63,7 @@ const raids = {
   Akkan: [1, 2, 3],
   Ivory: [1, 2, 3, 4],
   Thaemine: [1, 2, 3, 4],
+  Echidna: [1, 2],
 };
 let bosses = [null, ...guardians, ...Object.keys(raids)];
 
@@ -140,7 +141,11 @@ const selectedSort = Generators.input(sortSelect);
 
 ```js patch selector
 const patches = new Map([
-  ["April 2024 - Mage Balance (Current)", [new Date(`2024-04-17`), Date.now()]],
+  ["June 2024 - Minor Balance (Current)", [new Date(`2024-06-19`), Date.now()]],
+  [
+    "April 2024 - Mage Balance",
+    [new Date(`2024-04-17`), new Date(`2024-06-18`)],
+  ],
   ["March 2024 - Breaker", [new Date(`2024-03-20`), new Date(`2024-04-16`)]],
   [
     "January 2024 - Major Balance",
@@ -192,9 +197,10 @@ const bossIlevelDefaults = {
   Veskal: [1630, 1675],
   Brelshaza: { Hard: [1580, 1609] },
   Kayangel: { Hard: [1580, 1599] },
-  Akkan: { Normal: [1580, 1599], Hard: [1600, 1675] },
+  Akkan: { Normal: [1580, 1599], Hard: [1600, 1619] },
   Ivory: { Normal: [1600, 1619], Hard: [1620, 1675] },
   Thaemine: { Normal: [1610, 1629], Hard: [1630, 1675] },
+  Echidna: { Normal: [1620, 1629], Hard: [1630, 1675] }
 };
 
 const iLevelDefaults = bossIlevelDefaults[selectedBoss]
