@@ -92,10 +92,10 @@ ilevel players in the typical situations in the current balance patch.
 To ensure we do not use data that is not representative of the typical situation,
 we classify logs as "Weird" if they do not have the expected number of players (
 4 or 8, depending on content), if they have a Princess Gunlancer, if they do not
-have the expected number of supports (either none or more than 1 per party), or
-if we fail to classify a player's build. Additonally, we filter out players that
-were dead when they cleared. These filters are on by default but can be toggled
-in the advanced options.
+have the expected number of supports (either none or more than 1 per party),
+if we fail to classify a player's build, or if we detect any Sidereal weapons.
+Additonally, we filter out players that were dead when they cleared. These
+filters are on by default but can be toggled in the advanced options.
 
 There is no guarantee that we classify builds correctly but we do our best with
 the following procedures:
@@ -148,6 +148,11 @@ their main engraving.
 - Artist: If they do more than 10% of the team damage, they're Recurrence.
 - Aeromancer: Checking for the Sunshower synergy buff on their own Sunshower skill (Wind Fury)
 </details>
+
+Whenever scraping methods are updated, it is unlikely previous logs will be
+rescraped with new methods. Check the changelogs to see when scraping procedures
+have changed (e.g., Sidereal weapons being classified as weird was added in
+June 2024).
 
 The data scraping is written in Python and the site/visualization is written
 with Javascript in the Observable Framework. Data scraping and deployment is
