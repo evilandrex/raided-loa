@@ -5,6 +5,8 @@ toc: false
 
 <h1>Raided Lost Ark</h1>
 
+<div class="caution">Data updates is paused until Loa-Logs/Faust can collect data again.</div>
+
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card">
       <h1>Select a fight</h1>
@@ -200,7 +202,7 @@ const bossIlevelDefaults = {
   Akkan: { Normal: [1580, 1599], Hard: [1600, 1619] },
   Ivory: { Normal: [1600, 1619], Hard: [1620, 1675] },
   Thaemine: { Normal: [1610, 1629], Hard: [1630, 1675] },
-  Echidna: { Normal: [1620, 1629], Hard: [1630, 1675] }
+  Echidna: { Normal: [1620, 1629], Hard: [1630, 1675] },
 };
 
 const iLevelDefaults = bossIlevelDefaults[selectedBoss]

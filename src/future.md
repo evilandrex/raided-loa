@@ -1,6 +1,6 @@
 # Changelogs
 
-- June 19, 2024 - Echidna Patch, filters Sidereal weapons as weird.
+- June 19, 2024 - Scraping paused, Echidna patch, filters Sidereal weapons as weird.
 - May 10, 2024 - Top 5 is back, updates still paused now with warning.
 - May 9, 2024 - Top 5 logs removed, data all anonymized, updates paused.
 - May 8, 2024 - Initial release.
