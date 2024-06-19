@@ -143,11 +143,11 @@ const selectedSort = Generators.input(sortSelect);
 
 ```js patch selector
 const patches = new Map([
-  ["June 2024 - Minor Balance (Current)", [new Date(`2024-06-19`), Date.now()]],
   [
     "April 2024 - Mage Balance",
     [new Date(`2024-04-17`), new Date(`2024-06-18`)],
   ],
+  ["June 2024 - Minor Balance (Current)", [new Date(`2024-06-19`), Date.now()]],
   ["March 2024 - Breaker", [new Date(`2024-03-20`), new Date(`2024-04-16`)]],
   [
     "January 2024 - Major Balance",
