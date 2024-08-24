@@ -7,9 +7,10 @@ export default {
   // all pages will be listed in alphabetical order. Listing pages explicitly
   // lets you organize them into sections and have unlisted pages.
   pages: [
-    {name: "Logs", path: "/loa-logs"},
+    { name: "Logs", path: "/loa-logs" },
     //{name: "Analysis", path: "/loa-analysis"},
-    {name: "Future", path: "/future"}
+    { name: "Summarizer", path: "/summarizer" },
+    { name: "Future", path: "/future" }
   ],
 
   // Content to add to the head of the page, e.g. for a favicon:
@@ -33,5 +34,5 @@ export default {
   // pager: true, // whether to show previous & next links in the footer
   root: "src", // path to the source root for preview
   // output: "dist", // path to the output root for build
-  search: false, 
+  search: false,
 };
