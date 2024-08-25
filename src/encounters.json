@@ -1,0 +1,170 @@
+{
+  "Valtan G1": {
+    "names": ["Dark Mountain Predator", "Destroyer Lucas", "Leader Lugaru"],
+    "difficulties": ["Normal", "Hard", "Inferno", "Solo"]
+  },
+  "Valtan G2": {
+    "names": ["Demon Beast Commander Valtan", "Ravaged Tyrant of Beasts"],
+    "difficulties": ["Normal", "Hard", "Inferno", "Solo"]
+  },
+  "Vykas G1": {
+    "names": ["Incubus Morphe", "Nightmarish Morphe"],
+    "difficulties": ["Inferno"]
+  },
+  "Vykas G2": {
+    "names": ["Covetous Devourer Vykas"],
+    "difficulties": ["Normal", "Hard", "Inferno", "Solo"]
+  },
+  "Vykas G3": {
+    "names": ["Covetous Legion Commander Vykas"],
+    "difficulties": ["Normal", "Hard", "Inferno", "Solo"]
+  },
+  "Clown G1": {
+    "names": ["Saydon"],
+    "difficulties": ["Normal", "Inferno", "Solo"]
+  },
+  "Clown G2": {
+    "names": ["Kakul"],
+    "difficulties": ["Normal", "Inferno", "Solo"]
+  },
+  "Clown G3": {
+    "names": ["Kakul-Saydon", "Encore-Desiring Kakul-Saydon"],
+    "difficulties": ["Normal", "Inferno", "Solo"]
+  },
+  "Brelshaza G1": {
+    "names": ["Gehenna Helkasirs"],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Brelshaza G2": {
+    "names": ["Ashtarot"],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Brelshaza G3": {
+    "names": ["Primordial Nightmare"],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Brelshaza G4": {
+    "names": ["Phantom Legion Commander Brelshaza"],
+    "difficulties": ["Normal", "Hard", "Inferno", "Solo"]
+  },
+  "Brelshaza G5": {
+    "names": [
+      "Brelshaza, Monarch of Nightmares",
+      "Imagined Primordial Nightmare",
+      "Pseudospace Primordial Nightmare"
+    ],
+    "difficulties": ["Inferno"]
+  },
+  "Kayangel G1": {
+    "names": ["Tienis"],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Kayangel G2": {
+    "names": ["Prunya"],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Kayangel G3": {
+    "names": ["Lauriel"],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Akkan G1": {
+    "names": ["Griefbringer Maurug", "Evolved Maurug"],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Akkan G2": {
+    "names": ["Lord of Degradation Akkan"],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Akkan G3": {
+    "names": ["Plague Legion Commander Akkan", "Lord of Kartheon Akkan"],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Ivory Tower G1": {
+    "names": ["Kaltaya, the Blooming Chaos"],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Ivory Tower G2": {
+    "names": ["Rakathus, the Lurking Arrogance"],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Ivory Tower G3": {
+    "names": [
+      "Lazaram, the Trailblazer",
+      "Subordinated Vertus",
+      "Subordinated Calventus",
+      "Subordinated Legoros",
+      "Brand of Subordination"
+    ],
+    "difficulties": ["Normal", "Hard", "Solo"]
+  },
+  "Thaemine G1": {
+    "names": ["Killineza the Dark Worshipper"],
+    "difficulties": ["Normal", "Hard"]
+  },
+  "Thaemine G2": {
+    "names": [
+      "Valinak, Knight of Darkness",
+      "Valinak, Taboo Usurper",
+      "Valinak, Herald of the End"
+    ],
+    "difficulties": ["Normal", "Hard"]
+  },
+  "Thaemine G3": {
+    "names": ["Thaemine the Lightqueller", "Dark Greatsword"],
+    "difficulties": ["Normal", "Hard", "The First"]
+  },
+  "Thaemine G4": {
+    "names": [
+      "Darkness Legion Commander Thaemine",
+      "Thaemine Prokel",
+      "Thaemine, Conqueror of Stars"
+    ],
+    "difficulties": ["Hard", "The First"]
+  },
+  "Echidna G1": {
+    "names": ["Red Doom Narkiel", "Agris"],
+    "difficulties": ["Normal", "Hard"]
+  },
+  "Echidna G2": {
+    "names": [
+      "Echidna",
+      "Covetous Master Echidna",
+      "Desire in Full Bloom, Echidna",
+      "Alcaone, the Twisted Venom",
+      "Agris, the Devouring Bog"
+    ],
+    "difficulties": ["Normal", "Hard"]
+  },
+  "Deskaluda": {
+    "names": ["Deskaluda"],
+    "difficulties": [""]
+  },
+  "Kungelanium": {
+    "names": ["Kungelanium"],
+    "difficulties": [""]
+  },
+  "Achates": {
+    "names": ["Achates"],
+    "difficulties": ["Trial"]
+  },
+  "Caliligos": {
+    "names": ["Caliligos"],
+    "difficulties": ["Trial"]
+  },
+  "Hanumatan": {
+    "names": ["Hanumatan"],
+    "difficulties": ["", "Trial"]
+  },
+  "Sonavel": {
+    "names": ["Sonavel"],
+    "difficulties": [""]
+  },
+  "Gargadeth": {
+    "names": ["Gargadeth"],
+    "difficulties": [""]
+  },
+  "Veskal": {
+    "names": ["Veskal"],
+    "difficulties": [""]
+  }
+}
