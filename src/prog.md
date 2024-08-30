@@ -1,10 +1,10 @@
 ---
-title: Raided Lost Ark Log Summarizer
+title: Progression Analysis
 toc: false
 ---
 
-<h1>Raided Lost Ark Log Summarizer</h1>
-Locally summarize your runs!
+<h1>Progression Analysis</h1>
+Analyze progression data.
 
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card">
@@ -48,9 +48,11 @@ const hpBarMap = await FileAttachment("bossHPBars.json").json();
 let encounterText, selectedEncounter;
 if (!!db) {
   encounterText = Inputs.text({
-    label: "Encounter (start typing to search)",
+    label: "Encounter",
+    placeholder: "Type to search",
     datalist: encounters,
     required: true,
+    submit: true,
   });
 
   selectedEncounter = Generators.input(encounterText);

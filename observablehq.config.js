@@ -9,7 +9,7 @@ export default {
   pages: [
     { name: "Logs", path: "/loa-logs" },
     //{name: "Analysis", path: "/loa-analysis"},
-    { name: "Summarizer", path: "/summarizer" },
+    { name: "Progression", path: "/prog" },
     { name: "Future", path: "/future" }
   ],
 
