@@ -9,10 +9,9 @@ Locally summarize your runs!
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card">
       ${fileUpload}
-      ${bossSelect}
-      ${dateStartSelect}
-      ${dateEndSelect}
-      ${filterClearedToggle}
+      ${encounterText ? encounterText : ""}
+      ${dateStartSelect ? dateStartSelect : ""}
+      ${dateEndSelect ? dateEndSelect : ""}
     </div>
 
 </div>
@@ -26,54 +25,51 @@ const file = Generators.input(fileUpload);
 let db, bosses, bossEntities;
 if (!!file) {
   db = await file.sqlite();
-  await db.query(`
-    ALTER TABLE encounter_preview 
-      ADD COLUMN boss_diff TEXT;
-    UPDATE encounter_preview 
-      SET boss_diff = concat(current_boss, " - ", difficulty) 
-      WHERE difficulty IS NOT "";
-    UPDATE encounter_preview 
-      SET boss_diff = current_boss 
-      WHERE difficulty IS "";
-  `);
-
-  bosses = await db.query(`SELECT DISTINCT boss_diff FROM encounter_preview`);
-  bosses = bosses.map((row) => row.boss_diff);
 }
 ```
 
-```js boss select
-const bossDict = 
-// let bossSelect = "";
-let bossSelect, selectedBoss;
-if (!!bosses) {
-  bossSelect = Inputs.select(bosses, {
-    label: "Bosses (shift+click to select multiple)",
-    multiple: true,
+```js constants
+const encounterDict = await FileAttachment("encounters.json").json();
+const encounters = Object.keys(encounterDict)
+  .map((key) =>
+    encounterDict[key].difficulties.map((diff) => `${key} - ${diff}`)
+  )
+  .flat()
+  .map((encounter) =>
+    encounter.split(" - ")[1] == "" ? encounter.split([" - "])[0] : encounter
+  );
+const hpBarMap = await FileAttachment("bossHPBars.json").json();
+```
+
+```js encounter select
+let encounterText, selectedEncounter;
+if (!!db) {
+  encounterText = Inputs.text({
+    label: "Encounter (start typing to search)",
+    datalist: encounters,
+    required: true,
   });
 
-  selectedBoss = Generators.input(bossSelect);
+  selectedEncounter = Generators.input(encounterText);
 }
 ```
 
 ```js date selectors
-let dateStart, dateEnd;
-let dateStartSelect,
-  dateEndSelect = "";
-if (!!bosses) {
-  const now = new Date(Date.now());
-  let dayDiff;
-  if (now.getDay() < 3) {
-    // Less than Wednesday
-    dayDiff = 4 + now.getDay();
-  } else {
-    // Wednesday or more
-    dayDiff = now.getDay() - 3;
-  }
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - dayDiff);
-  weekStart.setHours(0, 0, 0, 0); // TODO: Account for different server resets
+const now = new Date(Date.now());
+let dayDiff;
+if (now.getDay() < 3) {
+  // Less than Wednesday
+  dayDiff = 4 + now.getDay();
+} else {
+  // Wednesday or more
+  dayDiff = now.getDay() - 3;
+}
+const weekStart = new Date(now);
+weekStart.setDate(now.getDate() - dayDiff);
+weekStart.setHours(0, 0, 0, 0); // TODO: Account for different server resets
 
+let dateStart, dateEnd, dateStartSelect, dateEndSelect;
+if (!!db) {
   dateStartSelect = Inputs.datetime({
     label: "Start Date",
     value: weekStart,
@@ -88,35 +84,200 @@ if (!!bosses) {
 }
 ```
 
-```js only cleared toggle
-let filterClearedToggle, filterCleared;
-if (!!bosses) {
-  filterClearedToggle = Inputs.toggle({
-    label: "Only Cleared",
-    value: true,
-  });
-  filterCleared = Generators.input(filterClearedToggle);
-}
-```
-
 ```js filtered encounters
-if (!!bosses) {
+let filteredIDs;
+// console.log(selectedEncounter);
+// console.log(dateStart);
+// console.log(dateEnd);
+if (!!selectedEncounter) {
+  const selectedBoss = encounterDict[selectedEncounter.split(" - ")[0]].names;
+  let selectedDiff = selectedEncounter.split(" - ")[1];
+  if (!selectedDiff) {
+    selectedDiff = "";
+  }
   let filterQuery = `
-    SELECT * FROM encounter_preview
-      WHERE fight_start BETWEEN ${dateStart.getTime()} AND ${dateEnd.getTime()}
+    SELECT id FROM encounter_preview
+      WHERE current_boss IN (${selectedBoss
+        .map((name) => `'${name}'`)
+        .join(", ")})
+      AND difficulty = '${selectedDiff}' 
+      AND fight_start BETWEEN '${dateStart.getTime()}' AND '${dateEnd.getTime()}'
   `;
 
-  if (selectedBoss.length > 0) {
-    filterQuery += ` AND boss_diff IN (${selectedBoss
-      .map((boss) => `'${boss}'`)
-      .join(",")})`;
+  filteredIDs = await db.query(filterQuery);
+}
+// console.log(selectedEncounter);
+//display(Inputs.table(filteredIDs, { select: false }));
+```
+
+```js single encounter
+let encID = filteredIDs[filteredIDs.length - 1].id;
+let singleEncounter = await db.query(`
+  SELECT * FROM encounter
+    WHERE id = ${encID}
+`);
+
+display(JSON.parse(singleEncounter[0]["misc"]));
+```
+
+```js get all single encounter info
+async function get_encounter_info(encID) {
+  const encounter = await db.query(`
+    SELECT * FROM encounter
+      WHERE id = ${encID}
+  `);
+  const encounterInfo = JSON.parse(encounter[0]["misc"]);
+
+  const entities = await db.query(`
+    SELECT * FROM entity
+      WHERE encounter_id = ${encID}
+      AND entity_type = "PLAYER"
+  `);
+
+  const encounterPreview = await db.query(`
+    SELECT * FROM encounter_preview
+      WHERE id = ${encID}
+  `);
+  
+  // Get boss hp info
+  const hpLog = encounterInfo["bossHpLog"];
+  const bosses = Object.keys(hpLog);
+
+  const bossesHPInfo = [];
+  for (let i = 0; i < bosses.length; i++) {
+    const hpBars = hpBarMap[bosses[i]];
+    const lastInfo = hpLog[bosses[i]].slice(-1)[0];
+
+    let bossBars;
+    if (hpBars) {
+      bossBars = Math.ceil(hpBars * lastInfo["p"]);
+    }
+
+    bossesHPInfo.push({
+      name: bosses[i],
+      hp: lastInfo["hp"],
+      p: lastInfo["p"],
+      bars: bossBars,
+      time: lastInfo["time"],
+    });
   }
 
-  const filteredEncounters = await db.query(filterQuery);
+  bossesHPInfo.sort((a, b) => a.time - b.time);
 
-  display(Inputs.table(filteredEncounters, { select: false }));
+  // Get player info
+  const partyInfo = encounterInfo["partyInfo"];
+  const partyNumbers = Object.keys(partyInfo);
+  const playerInfo = [];
+  for (let i = 0; i < entities.length; i++) {
+    const entity = entities[i];
+    const damageInfo = JSON.parse(entity["damage_stats"]);
+    playerInfo.push({
+      name: entity["name"],
+      class: entity["class"],
+      party: Number(
+        partyNumbers.filter((num) => partyInfo[num].includes(entity["name"]))[0]
+      ),
+      dps: damageInfo["dps"],
+      supAPUptime: damageInfo["buffedBySupport"] / damageInfo["damageDealt"],
+      supIdentityUptime:
+        damageInfo["buffedByIdentity"] / damageInfo["damageDealt"],
+      supBrandUptime:
+        damageInfo["debuffedBySupport"] / damageInfo["damageDealt"],
+      critPercent: damageInfo["critDamage"] / damageInfo["damageDealt"],
+      frontPercent: damageInfo["frontAttackDamage"] / damageInfo["damageDealt"],
+      backPercent: damageInfo["backAttackDamage"] / damageInfo["damageDealt"],
+      damageTaken: damageInfo["damageTaken"],
+      deaths: damageInfo["deaths"],
+      deathTime: damageInfo["deathTime"],
+    });
+  }
+
+  return {
+    bossHPInfo: bossesHPInfo,
+    playerInfo: playerInfo,
+    cleared: encounterPreview[0]["cleared"],
+  };
 }
+
+display(await get_encounter_info(encID));
 ```
+
+```js encounter entities
+let encounterEntities = await db.query(`
+  SELECT * FROM entity
+    WHERE encounter_id = ${encID}
+    AND entity_type = "PLAYER"
+`);
+
+const partyInfo = JSON.parse(singleEncounter[0]["misc"])["partyInfo"];
+const partyNumbers = Object.keys(partyInfo);
+const playerInfo = [];
+for (let i = 0; i < encounterEntities.length; i++) {
+  const entity = encounterEntities[i];
+  const damageInfo = JSON.parse(entity["damage_stats"]);
+  playerInfo.push({
+    name: entity["name"],
+    class: entity["class"],
+    party: Number(
+      partyNumbers.filter((num) => partyInfo[num].includes(entity["name"]))[0]
+    ),
+    dps: damageInfo["dps"],
+    supAPUptime: damageInfo["buffedBySupport"] / damageInfo["damageDealt"],
+    supIdentityUptime:
+      damageInfo["buffedByIdentity"] / damageInfo["damageDealt"],
+    supBrandUptime: damageInfo["debuffedBySupport"] / damageInfo["damageDealt"],
+    critPercent: damageInfo["critDamage"] / damageInfo["damageDealt"],
+    frontPercent: damageInfo["frontAttackDamage"] / damageInfo["damageDealt"],
+    backPercent: damageInfo["backAttackDamage"] / damageInfo["damageDealt"],
+    damageTaken: damageInfo["damageTaken"],
+    deaths: damageInfo["deaths"],
+    deathTime: damageInfo["deathTime"],
+  });
+}
+display(Inputs.table(encounterEntities, { select: false }));
+```
+
+```js damage states example
+display(JSON.parse(encounterEntities[7]["damage_stats"]));
+```
+
+```js test
+display(playerInfo);
+```
+
+```js boss hp info
+const hpLog = JSON.parse(singleEncounter[0]["misc"])["bossHpLog"];
+const bosses = Object.keys(hpLog);
+
+function getBossHPInfo(hpLog) {
+  const bossesHPInfo = [];
+  for (let i = 0; i < bosses.length; i++) {
+    const hpBars = hpBarMap[bosses[i]];
+    const lastInfo = hpLog[bosses[i]].slice(-1)[0];
+
+    let bossBars;
+    if (hpBars) {
+      bossBars = Math.ceil(hpBars * lastInfo["p"]);
+    }
+
+    bossesHPInfo.push({
+      name: bosses[i],
+      hp: lastInfo["hp"],
+      p: lastInfo["p"],
+      bars: bossBars,
+      time: lastInfo["time"],
+    });
+  }
+
+  bossesHPInfo.sort((a, b) => a.time - b.time);
+  return bossesHPInfo;
+}
+
+const bossesHPInfo = getBossHPInfo(hpLog);
+// display(bossesHPInfo);
+```
+
+# Dev preview
 
 ```js encounter preview table
 const encounterPreview = await db.sql`SELECT * FROM encounter_preview`;
