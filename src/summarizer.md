@@ -12,6 +12,7 @@ Locally summarize your runs!
       ${encounterText ? encounterText : ""}
       ${dateStartSelect ? dateStartSelect : ""}
       ${dateEndSelect ? dateEndSelect : ""}
+      ${nameTextArea ? nameTextArea : ""}
     </div>
 
 </div>
@@ -29,6 +30,8 @@ if (!!file) {
 ```
 
 ```js constants
+import pako from "npm:pako";
+
 const encounterDict = await FileAttachment("encounters.json").json();
 const encounters = Object.keys(encounterDict)
   .map((key) =>
@@ -51,6 +54,18 @@ if (!!db) {
   });
 
   selectedEncounter = Generators.input(encounterText);
+}
+```
+
+```js name filters
+let nameTextArea, nameFilter;
+if (!!db) {
+  nameTextArea = Inputs.textarea({
+    label: "Names (comma separated)",
+    placeholder: "Leave blank to include all",
+  });
+
+  nameFilter = Generators.input(nameTextArea);
 }
 ```
 
@@ -105,19 +120,10 @@ if (!!selectedEncounter) {
   `;
 
   filteredIDs = await db.query(filterQuery);
+  // console.log(filteredIDs);
 }
 // console.log(selectedEncounter);
 //display(Inputs.table(filteredIDs, { select: false }));
-```
-
-```js single encounter
-let encID = filteredIDs[filteredIDs.length - 1].id;
-let singleEncounter = await db.query(`
-  SELECT * FROM encounter
-    WHERE id = ${encID}
-`);
-
-display(JSON.parse(singleEncounter[0]["misc"]));
 ```
 
 ```js get all single encounter info
@@ -127,8 +133,8 @@ async function get_encounter_info(encID) {
       WHERE id = ${encID}
   `);
   const encounterInfo = JSON.parse(encounter[0]["misc"]);
-
-  const entities = await db.query(`
+  // console.log(encounter[0]);
+  const playerEntities = await db.query(`
     SELECT * FROM entity
       WHERE encounter_id = ${encID}
       AND entity_type = "PLAYER"
@@ -138,9 +144,15 @@ async function get_encounter_info(encID) {
     SELECT * FROM encounter_preview
       WHERE id = ${encID}
   `);
-  
+
   // Get boss hp info
-  const hpLog = encounterInfo["bossHpLog"];
+  // zlib.gunzipSync(blobObj).toString('utf8')
+  let hpLog = encounterInfo["bossHpLog"];
+  if (!hpLog) {
+    let inflated = pako.inflate(encounter[0]["boss_hp_log"]);
+    hpLog = new TextDecoder().decode(inflated);
+    hpLog = JSON.parse(hpLog);
+  }
   const bosses = Object.keys(hpLog);
 
   const bossesHPInfo = [];
@@ -168,9 +180,16 @@ async function get_encounter_info(encID) {
   const partyInfo = encounterInfo["partyInfo"];
   const partyNumbers = Object.keys(partyInfo);
   const playerInfo = [];
-  for (let i = 0; i < entities.length; i++) {
-    const entity = entities[i];
-    const damageInfo = JSON.parse(entity["damage_stats"]);
+  for (let i = 0; i < playerEntities.length; i++) {
+    const entity = playerEntities[i];
+    let damageInfo = entity["damage_stats"];
+    if (typeof damageInfo === "object") {
+      let inflated = pako.inflate(entity["damage_stats"]);
+      damageInfo = new TextDecoder().decode(inflated);
+      damageInfo = JSON.parse(damageInfo);
+    } else {
+      damageInfo = JSON.parse(damageInfo);
+    }
     playerInfo.push({
       name: entity["name"],
       class: entity["class"],
@@ -196,85 +215,21 @@ async function get_encounter_info(encID) {
     bossHPInfo: bossesHPInfo,
     playerInfo: playerInfo,
     cleared: encounterPreview[0]["cleared"],
+    fightStart: encounterPreview[0]["fight_start"],
   };
 }
 
-display(await get_encounter_info(encID));
-```
-
-```js encounter entities
-let encounterEntities = await db.query(`
-  SELECT * FROM entity
-    WHERE encounter_id = ${encID}
-    AND entity_type = "PLAYER"
-`);
-
-const partyInfo = JSON.parse(singleEncounter[0]["misc"])["partyInfo"];
-const partyNumbers = Object.keys(partyInfo);
-const playerInfo = [];
-for (let i = 0; i < encounterEntities.length; i++) {
-  const entity = encounterEntities[i];
-  const damageInfo = JSON.parse(entity["damage_stats"]);
-  playerInfo.push({
-    name: entity["name"],
-    class: entity["class"],
-    party: Number(
-      partyNumbers.filter((num) => partyInfo[num].includes(entity["name"]))[0]
-    ),
-    dps: damageInfo["dps"],
-    supAPUptime: damageInfo["buffedBySupport"] / damageInfo["damageDealt"],
-    supIdentityUptime:
-      damageInfo["buffedByIdentity"] / damageInfo["damageDealt"],
-    supBrandUptime: damageInfo["debuffedBySupport"] / damageInfo["damageDealt"],
-    critPercent: damageInfo["critDamage"] / damageInfo["damageDealt"],
-    frontPercent: damageInfo["frontAttackDamage"] / damageInfo["damageDealt"],
-    backPercent: damageInfo["backAttackDamage"] / damageInfo["damageDealt"],
-    damageTaken: damageInfo["damageTaken"],
-    deaths: damageInfo["deaths"],
-    deathTime: damageInfo["deathTime"],
-  });
-}
-display(Inputs.table(encounterEntities, { select: false }));
-```
-
-```js damage states example
-display(JSON.parse(encounterEntities[7]["damage_stats"]));
-```
-
-```js test
-display(playerInfo);
-```
-
-```js boss hp info
-const hpLog = JSON.parse(singleEncounter[0]["misc"])["bossHpLog"];
-const bosses = Object.keys(hpLog);
-
-function getBossHPInfo(hpLog) {
-  const bossesHPInfo = [];
-  for (let i = 0; i < bosses.length; i++) {
-    const hpBars = hpBarMap[bosses[i]];
-    const lastInfo = hpLog[bosses[i]].slice(-1)[0];
-
-    let bossBars;
-    if (hpBars) {
-      bossBars = Math.ceil(hpBars * lastInfo["p"]);
-    }
-
-    bossesHPInfo.push({
-      name: bosses[i],
-      hp: lastInfo["hp"],
-      p: lastInfo["p"],
-      bars: bossBars,
-      time: lastInfo["time"],
-    });
+const encounterInfos = [];
+for (let i = 0; i < filteredIDs.length; i++) {
+  try {
+    const encounterInfo = await get_encounter_info(filteredIDs[i]["id"]);
+    encounterInfos.push(encounterInfo);
+  } catch (e) {
+    console.log("Failed encounter ID: " + filteredIDs[i]["id"]);
+    console.log(e);
   }
-
-  bossesHPInfo.sort((a, b) => a.time - b.time);
-  return bossesHPInfo;
 }
-
-const bossesHPInfo = getBossHPInfo(hpLog);
-// display(bossesHPInfo);
+display(encounterInfos);
 ```
 
 # Dev preview
