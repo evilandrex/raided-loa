@@ -222,15 +222,26 @@ async function get_encounter_info(encID) {
 }
 
 const encounterInfos = [];
+const names = nameFilter.split(",").map((name) => name.trim());
 for (let i = 0; i < filteredIDs.length; i++) {
   try {
     const encounterInfo = await get_encounter_info(filteredIDs[i]["id"]);
-    encounterInfos.push(encounterInfo);
+
+    if (nameFilter !== '') {
+      const playerNames = encounterInfo.playerInfo.map(player => player.name);
+      if (names.every(name => playerNames.includes(name))) {
+        encounterInfos.push(encounterInfo);
+      }
+    } else {
+      encounterInfos.push(encounterInfo);
+    }
   } catch (e) {
     console.log("Failed encounter ID: " + filteredIDs[i]["id"]);
     console.log(e);
   }
 }
+
+
 display(encounterInfos);
 ```
 
