@@ -271,6 +271,8 @@ async function get_encounter_info(encID) {
 
   bossesHPInfo.sort((a, b) => a.time - b.time);
 
+  const encounterEnd = encounter[0]["last_combat_packet"];
+
   // Get player info
   const partyInfo = encounterInfo["partyInfo"];
   const partyNumbers = Object.keys(partyInfo);
@@ -285,6 +287,9 @@ async function get_encounter_info(encID) {
     } else {
       damageInfo = JSON.parse(damageInfo);
     }
+
+    const realDeath = encounterEnd - damageInfo["deathTime"] > 500;
+
     playerInfo.push({
       name: entity["name"],
       class: entity["class"],
@@ -302,8 +307,8 @@ async function get_encounter_info(encID) {
       frontPercent: damageInfo["frontAttackDamage"] / damageInfo["damageDealt"],
       backPercent: damageInfo["backAttackDamage"] / damageInfo["damageDealt"],
       damageTaken: damageInfo["damageTaken"],
-      deaths: damageInfo["deaths"],
-      deathTime: damageInfo["deathTime"],
+      deaths: realDeath ? damageInfo["deaths"] : damageInfo["deaths"] - 1,
+      deathTime: realDeath ? damageInfo["deathTime"] : 0,
     });
   }
 
@@ -351,6 +356,9 @@ async function get_encounter_info(encID) {
     avgAPUptime: avgAPUptime,
     avgBrandUptime: avgBrandUptime,
     avgIdentityUptime: avgIdentityUptime,
+    deaths: playerInfo
+      .map((player) => player.deaths)
+      .reduce((a, b) => a + b, 0),
     cleared: encounterPreview[0]["cleared"],
     fightStart: encounterPreview[0]["fight_start"],
     duration: fightDuration,
@@ -400,9 +408,8 @@ const subBossFormat = {};
 const subBossWidths = {};
 for (let i = 0; i < selectedBossNames.length; i++) {
   subBossFormat[selectedBossNames[i]] = sparkbar(selectedBossBars[i]);
-  subBossWidths[selectedBossNames[i]] = 100
+  subBossWidths[selectedBossNames[i]] = 100;
 }
-
 
 const encounterTable = encounterInfos.map((enc) => {
   const row = {
@@ -427,19 +434,22 @@ const encounterTable = encounterInfos.map((enc) => {
     if (!enc.bossHPInfo[i].barsComplete) {
       continue;
     }
-    const barsLeft = hpBarMap[enc.bossHPInfo[i].name] - enc.bossHPInfo[i].barsComplete;
+    const barsLeft =
+      hpBarMap[enc.bossHPInfo[i].name] - enc.bossHPInfo[i].barsComplete;
     row[enc.bossHPInfo[i].name] = barsLeft;
   }
 
   return row;
 });
 
-display(Inputs.table(encounterTable, {
-  select: false, 
-  format: subBossFormat,
-  width: subBossWidths,
-  layout: "auto"
-}));
+display(
+  Inputs.table(encounterTable, {
+    select: false,
+    format: subBossFormat,
+    width: subBossWidths,
+    layout: "auto",
+  })
+);
 ```
 
 # Dev preview
