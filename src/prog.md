@@ -9,9 +9,9 @@ Analyze progression data.
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card">
       ${fileUpload}
-      ${encounterText ? encounterText : ""}
       ${dateStartSelect ? dateStartSelect : ""}
       ${dateEndSelect ? dateEndSelect : ""}
+      ${encounterText ? encounterText : ""}
       ${nameTextArea ? nameTextArea : ""}
     </div>
 </div>
@@ -418,8 +418,10 @@ if (!!filteredIDs) {
   }
 }
 
-// display(encounterInfos);
+display(encounterInfos);
 ```
+
+**Pulls**
 
 ```js encounters table
 function sparkbar(max) {
@@ -484,6 +486,170 @@ if (!!selectedEncounter) {
     })
   );
 }
+```
+
+**Player Summaries**
+
+```js player table
+const dpsNames = encounterInfos
+  .map((enc) =>
+    enc.playerInfo
+      .filter((player) => !supportClasses.includes(player["class"]))
+      .map((player) => player.name)
+  )
+  .flat()
+  .filter((name, i, arr) => arr.indexOf(name) === i);
+const supNames = encounterInfos
+  .map((enc) =>
+    enc.playerInfo
+      .filter((player) => supportClasses.includes(player["class"]))
+      .map((player) => player.name)
+  )
+  .flat()
+  .filter((name, i, arr) => arr.indexOf(name) === i);
+
+const dpsTable = dpsNames.map((name) => {
+  const playerInfo = encounterInfos
+    .map((enc) => enc.playerInfo.filter((player) => player.name === name))
+    .flat();
+
+  const row = {
+    Name: name,
+    Class: playerInfo[0].class,
+    "Last Party": playerInfo[playerInfo.length - 1].party,
+    DPS:
+      playerInfo.map((player) => player.dps).reduce((a, b) => a + b, 0) /
+      playerInfo.length,
+    "Crit Rate":
+      playerInfo
+        .map((player) => player.critPercent)
+        .reduce((a, b) => a + b, 0) / playerInfo.length,
+    "Front Attack":
+      playerInfo
+        .map((player) => player.frontPercent)
+        .reduce((a, b) => a + b, 0) / playerInfo.length,
+    "Back Attack":
+      playerInfo
+        .map((player) => player.backPercent)
+        .reduce((a, b) => a + b, 0) / playerInfo.length,
+    "Dmg Taken":
+      playerInfo
+        .map((player) => player.damageTaken)
+        .reduce((a, b) => a + b, 0) / playerInfo.length,
+    Deaths: playerInfo
+      .map((player) => player.deaths)
+      .reduce((a, b) => a + b, 0),
+    Pulls: playerInfo.length,
+  };
+
+  return row;
+});
+
+const supTable = supNames.map((name) => {
+  const playerEncs = encounterInfos.filter((enc) =>
+    enc.playerInfo.map((player) => player.name).includes(name)
+  );
+
+  const playerAllies = [];
+  const player = [];
+  for (let i = 0; i < playerEncs.length; i++) {
+    const playerParty = playerEncs[i].playerInfo.filter(
+      (player) => player.name === name
+    )[0].party;
+
+    playerAllies.push(
+      playerEncs[i].playerInfo.filter(
+        (player) => player.party === playerParty && player.name !== name
+      )
+    );
+
+    player.push(
+      playerEncs[i].playerInfo.filter((player) => player.name === name)[0]
+    );
+  }
+
+  const playerClass = player[0].class;
+  const playerParty = player[player.length - 1].party;
+  const playerDeaths = player
+    .map((player) => player.deaths)
+    .reduce((a, b) => a + b, 0);
+
+  const allyAPUptime =
+    playerAllies
+      .map(
+        (allies) =>
+          allies.map((ally) => ally.supAPUptime).reduce((a, b) => a + b, 0) /
+          allies.length
+      )
+      .reduce((a, b) => a + b, 0) / playerAllies.length;
+
+  const allyBrandUptime =
+    playerAllies
+      .map(
+        (allies) =>
+          allies.map((ally) => ally.supBrandUptime).reduce((a, b) => a + b, 0) /
+          allies.length
+      )
+      .reduce((a, b) => a + b, 0) / playerAllies.length;
+
+  const allyIdentityUptime =
+    playerAllies
+      .map(
+        (allies) =>
+          allies
+            .map((ally) => ally.supIdentityUptime)
+            .reduce((a, b) => a + b, 0) / allies.length
+      )
+      .reduce((a, b) => a + b, 0) / playerAllies.length;
+
+  const row = {
+    Name: name,
+    Class: playerClass,
+    "Last Party": playerParty,
+    "AP %": allyAPUptime,
+    "Brand %": allyBrandUptime,
+    "Identity %": allyIdentityUptime,
+    "Dmg Taken":
+      player.map((player) => player.damageTaken).reduce((a, b) => a + b, 0) /
+      player.length,
+    Deaths: playerDeaths,
+    Pulls: player.length,
+  };
+
+  return row;
+});
+
+function formatPercent(x) {
+  return Math.round(x * 1000) / 10 + "%";
+}
+display(
+  Inputs.table(dpsTable, {
+    select: false,
+    sort: "Pulls",
+    reverse: true,
+    format: {
+      DPS: (x) => Math.round(x / 100_000) / 10 + "M",
+      "Crit Rate": formatPercent,
+      "Front Attack": formatPercent,
+      "Back Attack": formatPercent,
+      "Dmg Taken": (x) => Math.round(x / 1000) + "K",
+    },
+  })
+);
+display(html`<hr />`);
+display(
+  Inputs.table(supTable, {
+    select: false,
+    sort: "Pulls",
+    reverse: true,
+    format: {
+      "AP %": formatPercent,
+      "Brand %": formatPercent,
+      "Identity %": formatPercent,
+      "Dmg Taken": (x) => Math.round(x / 1000) + "K",
+    },
+  })
+);
 ```
 
 # Dev preview
