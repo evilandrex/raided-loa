@@ -9,9 +9,10 @@ Analyze progression data.
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card">
       ${fileUpload}
+      ${encounterText ? encounterText : ""}
       ${dateStartSelect ? dateStartSelect : ""}
       ${dateEndSelect ? dateEndSelect : ""}
-      ${encounterText ? encounterText : ""}
+      ${minDurationRange ? minDurationRange : ""}
       ${nameTextArea ? nameTextArea : ""}
     </div>
     <div>
@@ -239,6 +240,20 @@ if (!!db) {
 }
 ```
 
+```js min duration filter
+let minDuration, minDurationRange;
+if (!!db) {
+  minDurationRange = Inputs.range([0, 1200], {
+    label: "Min Duration (s)",
+    step: 10,
+    value: 0,
+  });
+
+  minDuration = Generators.input(minDurationRange);
+}
+```
+
+
 ```js filtered encounters
 let filteredIDs;
 // console.log(selectedEncounter);
@@ -260,6 +275,7 @@ if (!!selectedEncounter) {
         .join(", ")})
       AND difficulty IN (${selectedDiff.map((diff) => `'${diff}'`).join(", ")}) 
       AND fight_start BETWEEN '${dateStart.getTime()}' AND '${dateEnd.getTime()}'
+      AND duration >= ${minDuration * 1000}
   `;
 
   // console.log(filterQuery);
@@ -713,6 +729,5 @@ if (!!selectedEncounter) {
 
 - Reimplmement checkbox for encounters to remove them from summaries
 - Add shielding info for sup
-- Fix NaN sup perf (see Thaemine G3 Hard)
 - Add min encounter duration filter
 - Number of clears
