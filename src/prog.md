@@ -248,22 +248,26 @@ if (!!selectedEncounter) {
   const selectedBoss = encounterDict[selectedEncounter.split(" - ")[0]].names;
   let selectedDiff = selectedEncounter.split(" - ")[1];
   if (!selectedDiff) {
-    selectedDiff = "";
+    selectedDiff = ["", "Normal"];
+  } else {
+    selectedDiff = [selectedDiff];
   }
+
   let filterQuery = `
     SELECT id FROM encounter_preview
       WHERE current_boss IN (${selectedBoss
         .map((name) => `'${name}'`)
         .join(", ")})
-      AND difficulty = '${selectedDiff}' 
+      AND difficulty IN (${selectedDiff.map((diff) => `'${diff}'`).join(", ")}) 
       AND fight_start BETWEEN '${dateStart.getTime()}' AND '${dateEnd.getTime()}'
   `;
 
+  // console.log(filterQuery);
   filteredIDs = await db.query(filterQuery);
   // console.log(filteredIDs);
 }
 // console.log(selectedEncounter);
-//display(Inputs.table(filteredIDs, { select: false }));
+// display(Inputs.table(filteredIDs, { select: false }));
 ```
 
 ```js get encounter info
@@ -323,7 +327,12 @@ async function get_encounter_info(encID) {
 
   // Get player info
   const partyInfo = encounterInfo["partyInfo"];
-  const partyNumbers = Object.keys(partyInfo);
+  let partyNumbers;
+  if (partyInfo) {
+    partyNumbers = Object.keys(partyInfo);
+  }
+  console.log(partyInfo);
+
   const playerInfo = [];
   for (let i = 0; i < playerEntities.length; i++) {
     const entity = playerEntities[i];
@@ -338,13 +347,18 @@ async function get_encounter_info(encID) {
 
     const realDeath = encounterEnd - damageInfo["deathTime"] > 500;
 
+    const party = partyNumbers
+      ? Number(
+          partyNumbers.filter((num) =>
+            partyInfo[num].includes(entity["name"])
+          )[0]
+        )
+      : 0;
     playerInfo.push({
       name: entity["name"],
       class: entity["class"],
       isSupport: supportClasses.includes(entity["class"]),
-      party: Number(
-        partyNumbers.filter((num) => partyInfo[num].includes(entity["name"]))[0]
-      ),
+      party: party,
       dps: damageInfo["dps"],
       supAPUptime: damageInfo["buffedBySupport"] / damageInfo["damageDealt"],
       supBrandUptime:
@@ -358,6 +372,8 @@ async function get_encounter_info(encID) {
       deaths: realDeath ? damageInfo["deaths"] : damageInfo["deaths"] - 1,
       deathTime: realDeath ? damageInfo["deathTime"] : 0,
     });
+
+    // console.log(damageInfo);
   }
 
   const fightDuration =
@@ -377,20 +393,26 @@ async function get_encounter_info(encID) {
   const avgTeamDPSTaken = avgTeamDamageTaken / fightDuration;
 
   const avgAPUptime =
-    playerInfo
-      .filter((player) => !player.isSupport)
-      .map((player) => player.supAPUptime)
-      .reduce((a, b) => a + b, 0) / nDPS;
+    nDPS > 0
+      ? playerInfo
+          .filter((player) => !player.isSupport)
+          .map((player) => player.supAPUptime)
+          .reduce((a, b) => a + b, 0) / nDPS
+      : 0;
   const avgBrandUptime =
-    playerInfo
-      .filter((player) => !player.isSupport)
-      .map((player) => player.supBrandUptime)
-      .reduce((a, b) => a + b, 0) / nDPS;
+    nDPS > 0
+      ? playerInfo
+          .filter((player) => !player.isSupport)
+          .map((player) => player.supBrandUptime)
+          .reduce((a, b) => a + b, 0) / nDPS
+      : 0;
   const avgIdentityUptime =
-    playerInfo
-      .filter((player) => !player.isSupport)
-      .map((player) => player.supIdentityUptime)
-      .reduce((a, b) => a + b, 0) / nDPS;
+    nDPS > 0
+      ? playerInfo
+          .filter((player) => !player.isSupport)
+          .map((player) => player.supIdentityUptime)
+          .reduce((a, b) => a + b, 0) / nDPS
+      : 0;
 
   return {
     id: encID,
@@ -416,7 +438,7 @@ async function get_encounter_info(encID) {
 }
 
 const encounterInfos = [];
-if (!!filteredIDs) {
+if (filteredIDs.length > 0) {
   const names = nameFilter.split(",").map((name) => name.trim());
   for (let i = 0; i < filteredIDs.length; i++) {
     try {
@@ -459,9 +481,10 @@ function sparkbar(max) {
 }
 
 const subBossFormat = {
-  DPS: formatMillions,
-  "Dmg Taken": formatThousands,
-  "DPS Taken": formatThousands,
+  "Total DPS": formatMillions,
+  Duration: formatDuration,
+  "Total Dmg Taken": formatThousands,
+  "Total DPS Taken": formatThousands,
 };
 const subBossWidths = {};
 let encounterTable, tableSelect;
@@ -476,9 +499,9 @@ if (!!selectedEncounter) {
       ID: enc.id.toString(),
       "Bars Complete": enc.barsComplete,
       Duration: enc.duration,
-      DPS: enc.avgTeamDps,
-      "Dmg Taken": enc.avgTeamDamageTaken,
-      "DPS Taken": enc.avgTeamDPSTaken,
+      "Total DPS": enc.avgTeamDps,
+      "Total Dmg Taken": enc.avgTeamDamageTaken,
+      "Total DPS Taken": enc.avgTeamDPSTaken,
       "Sup. Perf.": `${Math.round(enc.avgAPUptime * 100)}/${Math.round(
         enc.avgBrandUptime * 100
       )}/${Math.round(enc.avgIdentityUptime * 100)}`,
@@ -502,6 +525,7 @@ if (!!selectedEncounter) {
 
   tableSelect = view(
     Inputs.table(encounterTable, {
+      select: false,
       value: encounterTable,
       format: subBossFormat,
       width: subBossWidths,
@@ -541,7 +565,7 @@ if (!!selectedEncounter) {
       Name: name,
       Class: playerInfo[0].class,
       "Last Party": playerInfo[playerInfo.length - 1].party,
-      DPS:
+      "Avg DPS":
         playerInfo.map((player) => player.dps).reduce((a, b) => a + b, 0) /
         playerInfo.length,
       "Crit Rate":
@@ -556,13 +580,16 @@ if (!!selectedEncounter) {
         playerInfo
           .map((player) => player.backPercent)
           .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "Dmg Taken":
+      "Avg Dmg Taken":
         playerInfo
           .map((player) => player.damageTaken)
           .reduce((a, b) => a + b, 0) / playerInfo.length,
-      Deaths: playerInfo
+      "Total Deaths": playerInfo
         .map((player) => player.deaths)
         .reduce((a, b) => a + b, 0),
+      "Death / Pull":
+        playerInfo.map((player) => player.deaths).reduce((a, b) => a + b, 0) /
+        playerInfo.length,
       Pulls: playerInfo.length,
     };
 
@@ -574,7 +601,7 @@ if (!!selectedEncounter) {
       enc.playerInfo.map((player) => player.name).includes(name)
     );
 
-    const playerAllies = [];
+    let playerAllies = [];
     const player = [];
     for (let i = 0; i < playerEncs.length; i++) {
       const playerParty = playerEncs[i].playerInfo.filter(
@@ -591,6 +618,8 @@ if (!!selectedEncounter) {
         playerEncs[i].playerInfo.filter((player) => player.name === name)[0]
       );
     }
+
+    playerAllies = playerAllies.filter((ally) => ally.length > 0);
 
     const playerClass = player[0].class;
     const playerParty = player[player.length - 1].party;
@@ -627,6 +656,8 @@ if (!!selectedEncounter) {
         )
         .reduce((a, b) => a + b, 0) / playerAllies.length;
 
+    console.log(playerAllies);
+
     const row = {
       Name: name,
       Class: playerClass,
@@ -637,7 +668,8 @@ if (!!selectedEncounter) {
       "Dmg Taken":
         player.map((player) => player.damageTaken).reduce((a, b) => a + b, 0) /
         player.length,
-      Deaths: playerDeaths,
+      "Total Deaths": playerDeaths,
+      "Death / Pull": playerDeaths / player.length,
       Pulls: player.length,
     };
 
@@ -650,11 +682,12 @@ if (!!selectedEncounter) {
       sort: "Pulls",
       reverse: true,
       format: {
-        DPS: formatMillions,
+        "Avg DPS": formatMillions,
         "Crit Rate": formatPercent,
         "Front Attack": formatPercent,
         "Back Attack": formatPercent,
-        "Dmg Taken": formatThousands,
+        "Avg Dmg Taken": formatThousands,
+        "Last Party": (x) => x + 1,
       },
     })
   );
@@ -669,151 +702,17 @@ if (!!selectedEncounter) {
         "Brand %": formatPercent,
         "Identity %": formatPercent,
         "Dmg Taken": formatThousands,
+        "Last Party": (x) => x + 1,
       },
     })
   );
 }
 ```
 
-<!-- # Dev preview
+# TODO LIST
 
-```js prog line plot dimensions
-const width = Generators.width(document.querySelector("main"));
-const plotHeight = tableSelect.length * 40;
-const margins = { top: 10, right: 10, bottom: 10, left: 10 };
-const xAxisHeight = 30;
-const yAxisWidth = 50;
-const height = plotHeight + margins.top + margins.bottom + xAxisHeight;
-```
-
-```js prog line plot
-console.log(tableSelect);
-// Create x-scale based on bars
-const xScale = d3
-  .scaleLinear()
-  .domain([0, selectedBossTotalBars])
-  .range([margins.left + yAxisWidth, width - margins.right]);
-
-// Create y-scale based on encounters
-const yScale = d3
-  .scaleBand()
-  .domain(tableSelect.map((d) => d.ID))
-  .range([margins.top + xAxisHeight, height - margins.bottom])
-  .paddingInner(0.3)
-  .paddingOuter(0.25);
-
-// Create SVG container
-const svg = d3
-  .create("svg")
-  .attr("width", width)
-  .attr("height", height)
-  .style("background", "transparent");
-
-const g = svg.append("g").selectAll("g").data(tableSelect).join("g");
-
-// Add a rectangle for each encounter for each boss
-// console.log(selectedBossNames.length);
-for (let i = selectedBossNames.length - 1; i >= 0; i--) {
-  const previousBosses = selectedBossNames.slice(0, i);
-  // console.log(i);
-
-  const bossBars = g
-    .append("g")
-    .attr("visibility", (d) => {
-      return typeof d[selectedBossNames[i]] !== "undefined" &&
-        d[selectedBossNames[i]] !== 0
-        ? "visible"
-        : "hidden";
-    })
-    .attr("transform", (d) => {
-      const previousBarX = previousBosses
-        .map((boss) => d[boss])
-        .filter((x) => x)
-        .reduce((a, b) => a + b, 0);
-      return `translate(${xScale(previousBarX)}, 0)`;
-    })
-    .attr("id", selectedBossNames[i]);
-
-  bossBars
-    .append("rect")
-    .attr("x", 0)
-    .attr("y", (d) => yScale(d.ID))
-    .attr("width", (d) => {
-      return xScale(d[selectedBossNames[i]]) - xScale(0);
-    })
-    // .attr("width", 20)
-    .attr("height", yScale.bandwidth())
-    .attr("fill", "var(--theme-foreground-faintest)")
-    .attr("stroke", "var(--theme-foreground)");
-
-  bossBars
-    .append("text")
-    .attr("x", 2)
-    .attr("y", (d) => yScale(d.ID) + yScale.bandwidth() - 6)
-    .attr("dy", "0.35em")
-    .attr("fill", "var(--theme-foreground)")
-    .style("font", "10px/1.6 var(--sans-serif)")
-    .text((d) => `${d[selectedBossNames[i]]} - ${selectedBossNames[i]}`);
-}
-
-// Draw an extra rectangle at the end to fill in the rest
-g.append("rect")
-  .attr("x", (d) => {
-    const previousBarX = selectedBossNames
-      .map((boss) => d[boss])
-      .filter((x) => x)
-      .reduce((a, b) => a + b, 0);
-    return xScale(previousBarX);
-  })
-  .attr("y", (d) => yScale(d.ID))
-  .attr("width", (d) => {
-    return xScale(selectedBossTotalBars) - xScale(0);
-  })
-  .attr("height", yScale.bandwidth())
-  .attr("fill", "var(--theme-background)");
-
-// Add x-axis
-const xAxis = d3.axisTop(xScale).tickFormat((d) => d + 1);
-svg
-  .append("g")
-  .call(xAxis)
-  .attr("transform", `translate(0, ${margins.top + xAxisHeight})`);
-svg
-  .append("text")
-  .attr("x", width / 2)
-  .attr("y", margins.top + xAxisHeight - 30)
-  .attr("text-anchor", "middle")
-  .attr("fill", "var(--theme-foreground)")
-  .style("font", "10px/1.6 var(--sans-serif)")
-  .text("Bars Remaining");
-
-// Add y-axis
-const yAxis = d3.axisLeft(yScale).tickFormat((d) => d);
-svg.append("g").call(yAxis).attr("transform", `translate(${yAxisWidth}, 0)`);
-svg
-  .append("text")
-  .attr("x", -height / 2)
-  .attr("y", margins.left + yAxisWidth - 50)
-  .attr("text-anchor", "middle")
-  .attr("transform", "rotate(-90)")
-  .attr("fill", "var(--theme-foreground)")
-  .style("font", "10px/1.6 var(--sans-serif)")
-  .text("Log ID");
-
-display(svg.node());
-```
-
-```js encounter preview table
-const encounterPreview = await db.sql`SELECT * FROM encounter_preview`;
-display(Inputs.table(encounterPreview, { select: false }));
-```
-
-```js encounter table
-const encounter = await db.sql`SELECT * FROM encounter`;
-display(Inputs.table(encounter, { select: false }));
-```
-
-```js entity table
-const entity = await db.sql`SELECT * FROM entity`;
-display(Inputs.table(entity, { select: false }));
-``` -->
+- Reimplmement checkbox for encounters to remove them from summaries
+- Add shielding info for sup
+- Fix NaN sup perf (see Thaemine G3 Hard)
+- Add min encounter duration filter
+- Number of clears
