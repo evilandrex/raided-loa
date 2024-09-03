@@ -18,7 +18,8 @@ toc: false
         Load your encounters.db to show analysis tools. This file can be found 
         in your database folder (e.g., C:\Users\[USER]\AppData\Local\LOA Logs). 
         You can also get to this folder from your settings of LOA Logs in the 
-        database page.
+        database page. WARNING: if your database is very large, this will take
+        a lot of RAM and take a long time to load.
     </div>
 </div>
 
@@ -702,7 +703,7 @@ if (!!selectedEncounter) {
         player.map((player) => player.damageTaken).reduce((a, b) => a + b, 0) /
         player.length,
       "Deaths / Pull": playerDeaths / player.length,
-      "Total Deaths": playerDeaths,
+      "Deaths (Total)": playerDeaths,
       Clears: player.filter((player) => player.cleared == 1).length,
     };
 
