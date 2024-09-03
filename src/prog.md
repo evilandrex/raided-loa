@@ -144,6 +144,18 @@ if (!!db) {
 }
 ```
 
+```js boss info
+let selectedBossNames, selectedBossBars, selectedBossTotalBars;
+
+if (!!selectedEncounter) {
+  selectedBossNames = encounterDict[selectedEncounter.split(" - ")[0]]["names"];
+  selectedBossBars = selectedBossNames.map((name) => hpBarMap[name]);
+  selectedBossTotalBars = selectedBossBars
+    .filter((bars) => !!bars)
+    .reduce((a, b) => a + b, 0);
+}
+```
+
 ```js filtered encounters
 let filteredIDs;
 // console.log(selectedEncounter);
@@ -374,11 +386,7 @@ if (filteredIDs.length > 0) {
 **${selectedEncounter ? selectedEncounter : ""}**
 
 ```js boss info / encounter summaries
-let selectedBossNames,
-  selectedBossBars,
-  selectedBossTotalBars,
-  selectedEncounterInfos,
-  totalDuration,
+let totalDuration,
   avgPullDuration,
   avgTeamDPS,
   avgTeamDmgTaken,
@@ -390,48 +398,42 @@ let selectedBossNames,
   avgBossBarsComplete;
 
 if (!!selectedEncounter) {
-  selectedBossNames = encounterDict[selectedEncounter.split(" - ")[0]]["names"];
-  selectedBossBars = selectedBossNames.map((name) => hpBarMap[name]);
-  selectedBossTotalBars = selectedBossBars
-    .filter((bars) => !!bars)
-    .reduce((a, b) => a + b, 0);
-
-  totalDuration = encounterInfos
+  totalDuration = tableEncounters
     .map((enc) => enc.duration)
     .reduce((a, b) => a + b, 0);
-  avgPullDuration = totalDuration / encounterInfos.length;
+  avgPullDuration = totalDuration / tableEncounters.length;
 
   avgTeamDPS =
-    encounterInfos.map((enc) => enc.avgTeamDps).reduce((a, b) => a + b, 0) /
-    encounterInfos.length;
+    tableEncounters.map((enc) => enc.avgTeamDps).reduce((a, b) => a + b, 0) /
+    tableEncounters.length;
 
   avgTeamDmgTaken =
-    encounterInfos
+    tableEncounters
       .map((enc) => enc.avgTeamDamageTaken)
-      .reduce((a, b) => a + b, 0) / encounterInfos.length;
+      .reduce((a, b) => a + b, 0) / tableEncounters.length;
   avgTeamDPSTaken =
-    encounterInfos
+    tableEncounters
       .map((enc) => enc.avgTeamDPSTaken)
-      .reduce((a, b) => a + b, 0) / encounterInfos.length;
+      .reduce((a, b) => a + b, 0) / tableEncounters.length;
 
   avgAPUptime =
-    encounterInfos.map((enc) => enc.avgAPUptime).reduce((a, b) => a + b, 0) /
-    encounterInfos.length;
+    tableEncounters.map((enc) => enc.avgAPUptime).reduce((a, b) => a + b, 0) /
+    tableEncounters.length;
   avgBrandUptime =
-    encounterInfos.map((enc) => enc.avgBrandUptime).reduce((a, b) => a + b, 0) /
-    encounterInfos.length;
+    tableEncounters.map((enc) => enc.avgBrandUptime).reduce((a, b) => a + b, 0) /
+    tableEncounters.length;
   avgIdentityUptime =
-    encounterInfos
+    tableEncounters
       .map((enc) => enc.avgIdentityUptime)
-      .reduce((a, b) => a + b, 0) / encounterInfos.length;
+      .reduce((a, b) => a + b, 0) / tableEncounters.length;
 
-  bestEncounter = encounterInfos.reduce((a, b) =>
+  bestEncounter = tableEncounters.reduce((a, b) =>
     a.barsComplete > b.barsComplete ? a : b
   );
 
   avgBossBarsComplete = Math.round(
-    encounterInfos.map((enc) => enc.barsComplete).reduce((a, b) => a + b, 0) /
-      encounterInfos.length
+    tableEncounters.map((enc) => enc.barsComplete).reduce((a, b) => a + b, 0) /
+      tableEncounters.length
   );
 
   // display(bestEncounter);
@@ -442,7 +444,7 @@ if (!!selectedEncounter) {
 if (!!selectedEncounter) {
   display(html`<div class="grid grid-cols-3 card" style="grid-auto-rows: auto;">
     <div>
-      Pulls: ${encounterInfos.length} (${formatDuration(avgPullDuration)} per
+      Pulls: ${tableEncounters.length} (${formatDuration(avgPullDuration)} per
       pull)
       <br />
       Total Prog Time: ${formatDuration(totalDuration)}
@@ -479,6 +481,7 @@ if (!!selectedEncounter) {
   </div> `);
 }
 ```
+
 
 **${selectedEncounter ? "Pulls" : ""}**
 
@@ -549,11 +552,22 @@ if (!!selectedEncounter) {
 }
 ```
 
+```js table selected encounters
+let tableEncounters;
+if (!!selectedEncounter) {
+  tableEncounters = encounterInfos.filter((enc) => {
+    const selectedIDs = tableSelect.map((row) => row.ID);
+    return selectedIDs.includes(enc.id.toString());
+  });
+}
+```
+
 **${selectedEncounter ? "Player Summaries" : ""}**
+
 
 ```js player table
 if (!!selectedEncounter) {
-  const dpsNames = encounterInfos
+  const dpsNames = tableEncounters
     .map((enc) =>
       enc.playerInfo
         .filter((player) => !supportClasses.includes(player["class"]))
@@ -561,7 +575,7 @@ if (!!selectedEncounter) {
     )
     .flat()
     .filter((name, i, arr) => arr.indexOf(name) === i);
-  const supNames = encounterInfos
+  const supNames = tableEncounters
     .map((enc) =>
       enc.playerInfo
         .filter((player) => supportClasses.includes(player["class"]))
@@ -571,7 +585,7 @@ if (!!selectedEncounter) {
     .filter((name, i, arr) => arr.indexOf(name) === i);
 
   const dpsTable = dpsNames.map((name) => {
-    const playerInfo = encounterInfos
+    const playerInfo = tableEncounters
       .map((enc) => enc.playerInfo.filter((player) => player.name === name))
       .flat();
 
@@ -611,7 +625,7 @@ if (!!selectedEncounter) {
   });
 
   const supTable = supNames.map((name) => {
-    const playerEncs = encounterInfos.filter((enc) =>
+    const playerEncs = tableEncounters.filter((enc) =>
       enc.playerInfo.map((player) => player.name).includes(name)
     );
 
@@ -728,7 +742,7 @@ if (!!selectedEncounter) {
 }
 ```
 
+
 # TODO LIST
 
-- Reimplmement checkbox for encounters to remove them from summaries
 - Number of clears
