@@ -253,7 +253,6 @@ if (!!db) {
 }
 ```
 
-
 ```js filtered encounters
 let filteredIDs;
 // console.log(selectedEncounter);
@@ -381,6 +380,7 @@ async function get_encounter_info(encID) {
         damageInfo["debuffedBySupport"] / damageInfo["damageDealt"],
       supIdentityUptime:
         damageInfo["buffedByIdentity"] / damageInfo["damageDealt"],
+      shielded: damageInfo["damageAbsorbedOnOthers"],
       critPercent: damageInfo["critDamage"] / damageInfo["damageDealt"],
       frontPercent: damageInfo["frontAttackDamage"] / damageInfo["damageDealt"],
       backPercent: damageInfo["backAttackDamage"] / damageInfo["damageDealt"],
@@ -580,33 +580,33 @@ if (!!selectedEncounter) {
     const row = {
       Name: name,
       Class: playerInfo[0].class,
+      Pulls: playerInfo.length,
       "Last Party": playerInfo[playerInfo.length - 1].party,
-      "Avg DPS":
+      "DPS (Avg)":
         playerInfo.map((player) => player.dps).reduce((a, b) => a + b, 0) /
         playerInfo.length,
       "Crit Rate":
         playerInfo
           .map((player) => player.critPercent)
           .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "Front Attack":
+      "FA Rate":
         playerInfo
           .map((player) => player.frontPercent)
           .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "Back Attack":
+      "BA Rate":
         playerInfo
           .map((player) => player.backPercent)
           .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "Avg Dmg Taken":
+      "Dmg Taken (Avg)":
         playerInfo
           .map((player) => player.damageTaken)
           .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "Total Deaths": playerInfo
-        .map((player) => player.deaths)
-        .reduce((a, b) => a + b, 0),
-      "Death / Pull":
+      "Deaths / Pull":
         playerInfo.map((player) => player.deaths).reduce((a, b) => a + b, 0) /
         playerInfo.length,
-      Pulls: playerInfo.length,
+      "Deaths (Total)": playerInfo
+        .map((player) => player.deaths)
+        .reduce((a, b) => a + b, 0),
     };
 
     return row;
@@ -642,6 +642,9 @@ if (!!selectedEncounter) {
     const playerDeaths = player
       .map((player) => player.deaths)
       .reduce((a, b) => a + b, 0);
+    const playerShielded =
+      player.map((player) => player.shielded).reduce((a, b) => a + b, 0) /
+      player.length;
 
     const allyAPUptime =
       playerAllies
@@ -672,21 +675,22 @@ if (!!selectedEncounter) {
         )
         .reduce((a, b) => a + b, 0) / playerAllies.length;
 
-    console.log(playerAllies);
+    // console.log(playerAllies);
 
     const row = {
       Name: name,
       Class: playerClass,
+      Pulls: player.length,
       "Last Party": playerParty,
       "AP %": allyAPUptime,
       "Brand %": allyBrandUptime,
       "Identity %": allyIdentityUptime,
-      "Dmg Taken":
+      "Dmg Shielded (Avg)": playerShielded,
+      "Dmg Taken (Avg)":
         player.map((player) => player.damageTaken).reduce((a, b) => a + b, 0) /
         player.length,
+      "Deaths / Pull": playerDeaths / player.length,
       "Total Deaths": playerDeaths,
-      "Death / Pull": playerDeaths / player.length,
-      Pulls: player.length,
     };
 
     return row;
@@ -698,11 +702,11 @@ if (!!selectedEncounter) {
       sort: "Pulls",
       reverse: true,
       format: {
-        "Avg DPS": formatMillions,
+        "DPS (Avg)": formatMillions,
         "Crit Rate": formatPercent,
-        "Front Attack": formatPercent,
-        "Back Attack": formatPercent,
-        "Avg Dmg Taken": formatThousands,
+        "FA Rate": formatPercent,
+        "BA Rate": formatPercent,
+        "Dmg Taken (Avg)": formatThousands,
         "Last Party": (x) => x + 1,
       },
     })
@@ -717,7 +721,8 @@ if (!!selectedEncounter) {
         "AP %": formatPercent,
         "Brand %": formatPercent,
         "Identity %": formatPercent,
-        "Dmg Taken": formatThousands,
+        "Dmg Shielded (Avg)": formatThousands,
+        "Dmg Taken (Avg)": formatThousands,
         "Last Party": (x) => x + 1,
       },
     })
@@ -729,5 +734,4 @@ if (!!selectedEncounter) {
 
 - Reimplmement checkbox for encounters to remove them from summaries
 - Add shielding info for sup
-- Add min encounter duration filter
 - Number of clears
