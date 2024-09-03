@@ -4,7 +4,6 @@ toc: false
 ---
 
 <h1>Progression Analysis</h1>
-Analyze progression data.
 
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card">
@@ -22,62 +21,6 @@ Analyze progression data.
         database page.
     </div>
 </div>
-
-**${selectedEncounter ? selectedEncounter : ""}**
-
-```js summary div
-if (!!selectedEncounter) {
-  display(html`<div class="grid grid-cols-3 card" style="grid-auto-rows: auto;">
-    <div>
-      Pulls: ${encounterInfos.length} (${formatDuration(avgPullDuration)} per
-      pull)
-      <br />
-      Total Prog Time: ${formatDuration(totalDuration)}
-    </div>
-    <div>
-      Avg Team DPS: ${formatMillions(avgTeamDPS)}
-      <br />
-      Avg Dmg Taken: ${formatThousands(avgTeamDmgTaken)} (${formatThousands(
-        avgTeamDPSTaken
-      )} DPS)
-    </div>
-    <div>
-      Avg Sup. Performance: ${Math.round(avgAPUptime * 100)}/${Math.round(
-        avgBrandUptime * 100
-      )}/${Math.round(avgIdentityUptime * 100)}
-      <br />
-      Avg Complete: ${avgBossBarsComplete}/${selectedBossTotalBars} bars
-    </div>
-    <div class="grid-colspan-3">
-      <b>Best Run —</b> Log ID: ${bestEncounter.id} - Bars complete: ${bestEncounter.barsComplete}/${selectedBossTotalBars}
-      - Duration: ${formatDuration(bestEncounter.duration)} - Cleared: ${bestEncounter.cleared ==
-      1
-        ? "Yes"
-        : "No"}
-      <br />
-      DPS: ${formatMillions(bestEncounter.avgTeamDps)} - Total Damage Taken: ${formatThousands(
-        bestEncounter.avgTeamDamageTaken
-      )} - Average Support Performance: ${Math.round(
-        bestEncounter.avgAPUptime * 100
-      )}/${Math.round(bestEncounter.avgBrandUptime * 100)}/${Math.round(
-        bestEncounter.avgIdentityUptime * 100
-      )}
-    </div>
-  </div> `);
-}
-```
-
-```js uploader
-const fileUpload = Inputs.file();
-const file = Generators.input(fileUpload);
-```
-
-```js sqlite
-let db, bosses, bossEntities;
-if (!!file) {
-  db = await file.sqlite();
-}
-```
 
 ```js constants
 import pako from "npm:pako";
@@ -119,6 +62,18 @@ function formatDuration(x) {
 }
 ```
 
+```js uploader
+const fileUpload = Inputs.file();
+const file = Generators.input(fileUpload);
+```
+
+```js sqlite
+let db, bosses, bossEntities;
+if (!!file) {
+  db = await file.sqlite();
+}
+```
+
 ```js encounter select
 let encounterText, selectedEncounter;
 if (!!db) {
@@ -131,82 +86,6 @@ if (!!db) {
   });
 
   selectedEncounter = Generators.input(encounterText);
-}
-```
-
-```js boss info / encounter summaries
-let selectedBossNames,
-  selectedBossBars,
-  selectedBossTotalBars,
-  totalDuration,
-  avgPullDuration,
-  avgTeamDPS,
-  avgTeamDmgTaken,
-  avgTeamDPSTaken,
-  avgAPUptime,
-  avgBrandUptime,
-  avgIdentityUptime,
-  bestEncounter,
-  avgBossBarsComplete;
-
-if (!!selectedEncounter) {
-  selectedBossNames = encounterDict[selectedEncounter.split(" - ")[0]]["names"];
-  selectedBossBars = selectedBossNames.map((name) => hpBarMap[name]);
-  selectedBossTotalBars = selectedBossBars
-    .filter((bars) => !!bars)
-    .reduce((a, b) => a + b, 0);
-
-  totalDuration = encounterInfos
-    .map((enc) => enc.duration)
-    .reduce((a, b) => a + b, 0);
-  avgPullDuration = totalDuration / encounterInfos.length;
-
-  avgTeamDPS =
-    encounterInfos.map((enc) => enc.avgTeamDps).reduce((a, b) => a + b, 0) /
-    encounterInfos.length;
-
-  avgTeamDmgTaken =
-    encounterInfos
-      .map((enc) => enc.avgTeamDamageTaken)
-      .reduce((a, b) => a + b, 0) / encounterInfos.length;
-  avgTeamDPSTaken =
-    encounterInfos
-      .map((enc) => enc.avgTeamDPSTaken)
-      .reduce((a, b) => a + b, 0) / encounterInfos.length;
-
-  avgAPUptime =
-    encounterInfos.map((enc) => enc.avgAPUptime).reduce((a, b) => a + b, 0) /
-    encounterInfos.length;
-  avgBrandUptime =
-    encounterInfos.map((enc) => enc.avgBrandUptime).reduce((a, b) => a + b, 0) /
-    encounterInfos.length;
-  avgIdentityUptime =
-    encounterInfos
-      .map((enc) => enc.avgIdentityUptime)
-      .reduce((a, b) => a + b, 0) / encounterInfos.length;
-
-  bestEncounter = encounterInfos.reduce((a, b) =>
-    a.barsComplete > b.barsComplete ? a : b
-  );
-
-  avgBossBarsComplete = Math.round(
-    encounterInfos.map((enc) => enc.barsComplete).reduce((a, b) => a + b, 0) /
-      encounterInfos.length
-  );
-
-  // display(bestEncounter);
-}
-```
-
-```js name filters
-let nameTextArea, nameFilter;
-if (!!db) {
-  nameTextArea = Inputs.textarea({
-    label: "Names (comma separated)",
-    placeholder: "Leave blank to include all",
-  });
-
-  nameFilter = Generators.input(nameTextArea);
 }
 ```
 
@@ -246,10 +125,22 @@ if (!!db) {
   minDurationRange = Inputs.range([0, 1200], {
     label: "Min Duration (s)",
     step: 10,
-    value: 0,
+    value: 30,
   });
 
   minDuration = Generators.input(minDurationRange);
+}
+```
+
+```js name filters
+let nameTextArea, nameFilter;
+if (!!db) {
+  nameTextArea = Inputs.textarea({
+    label: "Names (comma separated)",
+    placeholder: "Leave blank to include all",
+  });
+
+  nameFilter = Generators.input(nameTextArea);
 }
 ```
 
@@ -480,6 +371,115 @@ if (filteredIDs.length > 0) {
 // display(encounterInfos);
 ```
 
+**${selectedEncounter ? selectedEncounter : ""}**
+
+```js boss info / encounter summaries
+let selectedBossNames,
+  selectedBossBars,
+  selectedBossTotalBars,
+  selectedEncounterInfos,
+  totalDuration,
+  avgPullDuration,
+  avgTeamDPS,
+  avgTeamDmgTaken,
+  avgTeamDPSTaken,
+  avgAPUptime,
+  avgBrandUptime,
+  avgIdentityUptime,
+  bestEncounter,
+  avgBossBarsComplete;
+
+if (!!selectedEncounter) {
+  selectedBossNames = encounterDict[selectedEncounter.split(" - ")[0]]["names"];
+  selectedBossBars = selectedBossNames.map((name) => hpBarMap[name]);
+  selectedBossTotalBars = selectedBossBars
+    .filter((bars) => !!bars)
+    .reduce((a, b) => a + b, 0);
+
+  totalDuration = encounterInfos
+    .map((enc) => enc.duration)
+    .reduce((a, b) => a + b, 0);
+  avgPullDuration = totalDuration / encounterInfos.length;
+
+  avgTeamDPS =
+    encounterInfos.map((enc) => enc.avgTeamDps).reduce((a, b) => a + b, 0) /
+    encounterInfos.length;
+
+  avgTeamDmgTaken =
+    encounterInfos
+      .map((enc) => enc.avgTeamDamageTaken)
+      .reduce((a, b) => a + b, 0) / encounterInfos.length;
+  avgTeamDPSTaken =
+    encounterInfos
+      .map((enc) => enc.avgTeamDPSTaken)
+      .reduce((a, b) => a + b, 0) / encounterInfos.length;
+
+  avgAPUptime =
+    encounterInfos.map((enc) => enc.avgAPUptime).reduce((a, b) => a + b, 0) /
+    encounterInfos.length;
+  avgBrandUptime =
+    encounterInfos.map((enc) => enc.avgBrandUptime).reduce((a, b) => a + b, 0) /
+    encounterInfos.length;
+  avgIdentityUptime =
+    encounterInfos
+      .map((enc) => enc.avgIdentityUptime)
+      .reduce((a, b) => a + b, 0) / encounterInfos.length;
+
+  bestEncounter = encounterInfos.reduce((a, b) =>
+    a.barsComplete > b.barsComplete ? a : b
+  );
+
+  avgBossBarsComplete = Math.round(
+    encounterInfos.map((enc) => enc.barsComplete).reduce((a, b) => a + b, 0) /
+      encounterInfos.length
+  );
+
+  // display(bestEncounter);
+}
+```
+
+```js summary div
+if (!!selectedEncounter) {
+  display(html`<div class="grid grid-cols-3 card" style="grid-auto-rows: auto;">
+    <div>
+      Pulls: ${encounterInfos.length} (${formatDuration(avgPullDuration)} per
+      pull)
+      <br />
+      Total Prog Time: ${formatDuration(totalDuration)}
+    </div>
+    <div>
+      Avg Team DPS: ${formatMillions(avgTeamDPS)}
+      <br />
+      Avg Dmg Taken: ${formatThousands(avgTeamDmgTaken)} (${formatThousands(
+        avgTeamDPSTaken
+      )} DPS)
+    </div>
+    <div>
+      Avg Sup. Performance: ${Math.round(avgAPUptime * 100)}/${Math.round(
+        avgBrandUptime * 100
+      )}/${Math.round(avgIdentityUptime * 100)}
+      <br />
+      Avg Complete: ${avgBossBarsComplete}/${selectedBossTotalBars} bars
+    </div>
+    <div class="grid-colspan-3">
+      <b>Best Run —</b> Log ID: ${bestEncounter.id} - Bars complete: ${bestEncounter.barsComplete}/${selectedBossTotalBars}
+      - Duration: ${formatDuration(bestEncounter.duration)} - Cleared: ${bestEncounter.cleared ==
+      1
+        ? "Yes"
+        : "No"}
+      <br />
+      DPS: ${formatMillions(bestEncounter.avgTeamDps)} - Total Damage Taken: ${formatThousands(
+        bestEncounter.avgTeamDamageTaken
+      )} - Average Support Performance: ${Math.round(
+        bestEncounter.avgAPUptime * 100
+      )}/${Math.round(bestEncounter.avgBrandUptime * 100)}/${Math.round(
+        bestEncounter.avgIdentityUptime * 100
+      )}
+    </div>
+  </div> `);
+}
+```
+
 **${selectedEncounter ? "Pulls" : ""}**
 
 ```js encounters table
@@ -539,7 +539,7 @@ if (!!selectedEncounter) {
 
   tableSelect = view(
     Inputs.table(encounterTable, {
-      select: false,
+      select: true,
       value: encounterTable,
       format: subBossFormat,
       width: subBossWidths,
@@ -731,5 +731,4 @@ if (!!selectedEncounter) {
 # TODO LIST
 
 - Reimplmement checkbox for encounters to remove them from summaries
-- Add shielding info for sup
 - Number of clears
