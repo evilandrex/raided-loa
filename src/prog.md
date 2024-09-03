@@ -249,7 +249,7 @@ async function get_encounter_info(encID) {
   if (partyInfo) {
     partyNumbers = Object.keys(partyInfo);
   }
-  console.log(partyInfo);
+  // console.log(partyInfo);
 
   const playerInfo = [];
   for (let i = 0; i < playerEntities.length; i++) {
@@ -290,9 +290,8 @@ async function get_encounter_info(encID) {
       damageTaken: damageInfo["damageTaken"],
       deaths: realDeath ? damageInfo["deaths"] : damageInfo["deaths"] - 1,
       deathTime: realDeath ? damageInfo["deathTime"] : 0,
+      cleared: encounterPreview[0]["cleared"],
     });
-
-    // console.log(damageInfo);
   }
 
   const fightDuration =
@@ -420,8 +419,9 @@ if (!!selectedEncounter) {
     tableEncounters.map((enc) => enc.avgAPUptime).reduce((a, b) => a + b, 0) /
     tableEncounters.length;
   avgBrandUptime =
-    tableEncounters.map((enc) => enc.avgBrandUptime).reduce((a, b) => a + b, 0) /
-    tableEncounters.length;
+    tableEncounters
+      .map((enc) => enc.avgBrandUptime)
+      .reduce((a, b) => a + b, 0) / tableEncounters.length;
   avgIdentityUptime =
     tableEncounters
       .map((enc) => enc.avgIdentityUptime)
@@ -481,7 +481,6 @@ if (!!selectedEncounter) {
   </div> `);
 }
 ```
-
 
 **${selectedEncounter ? "Pulls" : ""}**
 
@@ -564,7 +563,6 @@ if (!!selectedEncounter) {
 
 **${selectedEncounter ? "Player Summaries" : ""}**
 
-
 ```js player table
 if (!!selectedEncounter) {
   const dpsNames = tableEncounters
@@ -619,6 +617,7 @@ if (!!selectedEncounter) {
       "Deaths (Total)": playerInfo
         .map((player) => player.deaths)
         .reduce((a, b) => a + b, 0),
+      Clears: playerInfo.filter((player) => player.cleared == 1).length,
     };
 
     return row;
@@ -703,6 +702,7 @@ if (!!selectedEncounter) {
         player.length,
       "Deaths / Pull": playerDeaths / player.length,
       "Total Deaths": playerDeaths,
+      Clears: player.filter((player) => player.cleared == 1).length,
     };
 
     return row;
@@ -741,8 +741,3 @@ if (!!selectedEncounter) {
   );
 }
 ```
-
-
-# TODO LIST
-
-- Number of clears
