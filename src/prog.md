@@ -19,7 +19,7 @@ toc: false
         in your database folder (e.g., C:\Users\[USER]\AppData\Local\LOA Logs). 
         You can also get to this folder from your settings of LOA Logs in the 
         database page. WARNING: if your database is very large, this will take
-        a lot of RAM and take a long time to load.
+        a lot of RAM and extremely large databases may simply not work, sorry!
     </div>
 </div>
 
