@@ -497,10 +497,9 @@ function sparkbar(max) {
 }
 
 const subBossFormat = {
-  "Total DPS": formatMillions,
+  "DPS (Total)": formatMillions,
   Duration: formatDuration,
-  "Total Dmg Taken": formatThousands,
-  "Total DPS Taken": formatThousands,
+  "DPS Taken (Total)": formatThousands,
 };
 const subBossWidths = {};
 let encounterTable, tableSelect;
@@ -515,10 +514,9 @@ if (!!selectedEncounter) {
       ID: enc.id.toString(),
       "Bars Complete": enc.barsComplete,
       Duration: enc.duration,
-      "Total DPS": enc.avgTeamDps,
-      "Total Dmg Taken": enc.avgTeamDamageTaken,
-      "Total DPS Taken": enc.avgTeamDPSTaken,
-      "Sup. Perf.": `${Math.round(enc.avgAPUptime * 100)}/${Math.round(
+      "DPS (Total)": enc.avgTeamDps,
+      "DPS Taken (Total)": enc.avgTeamDPSTaken,
+      "Sup. Perf. ": `${Math.round(enc.avgAPUptime * 100)}/${Math.round(
         enc.avgBrandUptime * 100
       )}/${Math.round(enc.avgIdentityUptime * 100)}`,
       Deaths: enc.playerInfo
