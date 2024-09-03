@@ -4,14 +4,14 @@ toc: false
 ---
 
 <h1>Progression Analysis</h1>
-Analyze progression data.
 
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card">
       ${fileUpload}
+      ${encounterText ? encounterText : ""}
       ${dateStartSelect ? dateStartSelect : ""}
       ${dateEndSelect ? dateEndSelect : ""}
-      ${encounterText ? encounterText : ""}
+      ${minDurationRange ? minDurationRange : ""}
       ${nameTextArea ? nameTextArea : ""}
     </div>
     <div>
@@ -21,62 +21,6 @@ Analyze progression data.
         database page.
     </div>
 </div>
-
-**${selectedEncounter ? selectedEncounter : ""}**
-
-```js summary div
-if (!!selectedEncounter) {
-  display(html`<div class="grid grid-cols-3 card" style="grid-auto-rows: auto;">
-    <div>
-      Pulls: ${encounterInfos.length} (${formatDuration(avgPullDuration)} per
-      pull)
-      <br />
-      Total Prog Time: ${formatDuration(totalDuration)}
-    </div>
-    <div>
-      Avg Team DPS: ${formatMillions(avgTeamDPS)}
-      <br />
-      Avg Dmg Taken: ${formatThousands(avgTeamDmgTaken)} (${formatThousands(
-        avgTeamDPSTaken
-      )} DPS)
-    </div>
-    <div>
-      Avg Sup. Performance: ${Math.round(avgAPUptime * 100)}/${Math.round(
-        avgBrandUptime * 100
-      )}/${Math.round(avgIdentityUptime * 100)}
-      <br />
-      Avg Complete: ${avgBossBarsComplete}/${selectedBossTotalBars} bars
-    </div>
-    <div class="grid-colspan-3">
-      <b>Best Run —</b> Log ID: ${bestEncounter.id} - Bars complete: ${bestEncounter.barsComplete}/${selectedBossTotalBars}
-      - Duration: ${formatDuration(bestEncounter.duration)} - Cleared: ${bestEncounter.cleared ==
-      1
-        ? "Yes"
-        : "No"}
-      <br />
-      DPS: ${formatMillions(bestEncounter.avgTeamDps)} - Total Damage Taken: ${formatThousands(
-        bestEncounter.avgTeamDamageTaken
-      )} - Average Support Performance: ${Math.round(
-        bestEncounter.avgAPUptime * 100
-      )}/${Math.round(bestEncounter.avgBrandUptime * 100)}/${Math.round(
-        bestEncounter.avgIdentityUptime * 100
-      )}
-    </div>
-  </div> `);
-}
-```
-
-```js uploader
-const fileUpload = Inputs.file();
-const file = Generators.input(fileUpload);
-```
-
-```js sqlite
-let db, bosses, bossEntities;
-if (!!file) {
-  db = await file.sqlite();
-}
-```
 
 ```js constants
 import pako from "npm:pako";
@@ -119,6 +63,18 @@ function formatDuration(x) {
 }
 ```
 
+```js uploader
+const fileUpload = Inputs.file();
+const file = Generators.input(fileUpload);
+```
+
+```js sqlite
+let db, bosses, bossEntities;
+if (!!file) {
+  db = await file.sqlite();
+}
+```
+
 ```js encounter select
 let encounterText, selectedEncounter;
 if (!!db) {
@@ -131,82 +87,6 @@ if (!!db) {
   });
 
   selectedEncounter = Generators.input(encounterText);
-}
-```
-
-```js boss info / encounter summaries
-let selectedBossNames,
-  selectedBossBars,
-  selectedBossTotalBars,
-  totalDuration,
-  avgPullDuration,
-  avgTeamDPS,
-  avgTeamDmgTaken,
-  avgTeamDPSTaken,
-  avgAPUptime,
-  avgBrandUptime,
-  avgIdentityUptime,
-  bestEncounter,
-  avgBossBarsComplete;
-
-if (!!selectedEncounter) {
-  selectedBossNames = encounterDict[selectedEncounter.split(" - ")[0]]["names"];
-  selectedBossBars = selectedBossNames.map((name) => hpBarMap[name]);
-  selectedBossTotalBars = selectedBossBars
-    .filter((bars) => !!bars)
-    .reduce((a, b) => a + b, 0);
-
-  totalDuration = encounterInfos
-    .map((enc) => enc.duration)
-    .reduce((a, b) => a + b, 0);
-  avgPullDuration = totalDuration / encounterInfos.length;
-
-  avgTeamDPS =
-    encounterInfos.map((enc) => enc.avgTeamDps).reduce((a, b) => a + b, 0) /
-    encounterInfos.length;
-
-  avgTeamDmgTaken =
-    encounterInfos
-      .map((enc) => enc.avgTeamDamageTaken)
-      .reduce((a, b) => a + b, 0) / encounterInfos.length;
-  avgTeamDPSTaken =
-    encounterInfos
-      .map((enc) => enc.avgTeamDPSTaken)
-      .reduce((a, b) => a + b, 0) / encounterInfos.length;
-
-  avgAPUptime =
-    encounterInfos.map((enc) => enc.avgAPUptime).reduce((a, b) => a + b, 0) /
-    encounterInfos.length;
-  avgBrandUptime =
-    encounterInfos.map((enc) => enc.avgBrandUptime).reduce((a, b) => a + b, 0) /
-    encounterInfos.length;
-  avgIdentityUptime =
-    encounterInfos
-      .map((enc) => enc.avgIdentityUptime)
-      .reduce((a, b) => a + b, 0) / encounterInfos.length;
-
-  bestEncounter = encounterInfos.reduce((a, b) =>
-    a.barsComplete > b.barsComplete ? a : b
-  );
-
-  avgBossBarsComplete = Math.round(
-    encounterInfos.map((enc) => enc.barsComplete).reduce((a, b) => a + b, 0) /
-      encounterInfos.length
-  );
-
-  // display(bestEncounter);
-}
-```
-
-```js name filters
-let nameTextArea, nameFilter;
-if (!!db) {
-  nameTextArea = Inputs.textarea({
-    label: "Names (comma separated)",
-    placeholder: "Leave blank to include all",
-  });
-
-  nameFilter = Generators.input(nameTextArea);
 }
 ```
 
@@ -240,6 +120,43 @@ if (!!db) {
 }
 ```
 
+```js min duration filter
+let minDuration, minDurationRange;
+if (!!db) {
+  minDurationRange = Inputs.range([0, 1200], {
+    label: "Min Duration (s)",
+    step: 10,
+    value: 30,
+  });
+
+  minDuration = Generators.input(minDurationRange);
+}
+```
+
+```js name filters
+let nameTextArea, nameFilter;
+if (!!db) {
+  nameTextArea = Inputs.textarea({
+    label: "Names (comma separated)",
+    placeholder: "Leave blank to include all",
+  });
+
+  nameFilter = Generators.input(nameTextArea);
+}
+```
+
+```js boss info
+let selectedBossNames, selectedBossBars, selectedBossTotalBars;
+
+if (!!selectedEncounter) {
+  selectedBossNames = encounterDict[selectedEncounter.split(" - ")[0]]["names"];
+  selectedBossBars = selectedBossNames.map((name) => hpBarMap[name]);
+  selectedBossTotalBars = selectedBossBars
+    .filter((bars) => !!bars)
+    .reduce((a, b) => a + b, 0);
+}
+```
+
 ```js filtered encounters
 let filteredIDs;
 // console.log(selectedEncounter);
@@ -249,22 +166,27 @@ if (!!selectedEncounter) {
   const selectedBoss = encounterDict[selectedEncounter.split(" - ")[0]].names;
   let selectedDiff = selectedEncounter.split(" - ")[1];
   if (!selectedDiff) {
-    selectedDiff = "";
+    selectedDiff = ["", "Normal"];
+  } else {
+    selectedDiff = [selectedDiff];
   }
+
   let filterQuery = `
     SELECT id FROM encounter_preview
       WHERE current_boss IN (${selectedBoss
         .map((name) => `'${name}'`)
         .join(", ")})
-      AND difficulty = '${selectedDiff}' 
+      AND difficulty IN (${selectedDiff.map((diff) => `'${diff}'`).join(", ")}) 
       AND fight_start BETWEEN '${dateStart.getTime()}' AND '${dateEnd.getTime()}'
+      AND duration >= ${minDuration * 1000}
   `;
 
+  // console.log(filterQuery);
   filteredIDs = await db.query(filterQuery);
   // console.log(filteredIDs);
 }
 // console.log(selectedEncounter);
-//display(Inputs.table(filteredIDs, { select: false }));
+// display(Inputs.table(filteredIDs, { select: false }));
 ```
 
 ```js get encounter info
@@ -324,7 +246,12 @@ async function get_encounter_info(encID) {
 
   // Get player info
   const partyInfo = encounterInfo["partyInfo"];
-  const partyNumbers = Object.keys(partyInfo);
+  let partyNumbers;
+  if (partyInfo) {
+    partyNumbers = Object.keys(partyInfo);
+  }
+  // console.log(partyInfo);
+
   const playerInfo = [];
   for (let i = 0; i < playerEntities.length; i++) {
     const entity = playerEntities[i];
@@ -337,27 +264,34 @@ async function get_encounter_info(encID) {
       damageInfo = JSON.parse(damageInfo);
     }
 
-    const realDeath = encounterEnd - damageInfo["deathTime"] > 500;
+    const realDeath = encounterEnd - damageInfo["deathTime"] > 1000;
 
+    const party = partyNumbers
+      ? Number(
+          partyNumbers.filter((num) =>
+            partyInfo[num].includes(entity["name"])
+          )[0]
+        )
+      : 0;
     playerInfo.push({
       name: entity["name"],
       class: entity["class"],
       isSupport: supportClasses.includes(entity["class"]),
-      party: Number(
-        partyNumbers.filter((num) => partyInfo[num].includes(entity["name"]))[0]
-      ),
+      party: party,
       dps: damageInfo["dps"],
       supAPUptime: damageInfo["buffedBySupport"] / damageInfo["damageDealt"],
       supBrandUptime:
         damageInfo["debuffedBySupport"] / damageInfo["damageDealt"],
       supIdentityUptime:
         damageInfo["buffedByIdentity"] / damageInfo["damageDealt"],
+      shielded: damageInfo["damageAbsorbedOnOthers"],
       critPercent: damageInfo["critDamage"] / damageInfo["damageDealt"],
       frontPercent: damageInfo["frontAttackDamage"] / damageInfo["damageDealt"],
       backPercent: damageInfo["backAttackDamage"] / damageInfo["damageDealt"],
       damageTaken: damageInfo["damageTaken"],
       deaths: realDeath ? damageInfo["deaths"] : damageInfo["deaths"] - 1,
       deathTime: realDeath ? damageInfo["deathTime"] : 0,
+      cleared: encounterPreview[0]["cleared"],
     });
   }
 
@@ -378,20 +312,26 @@ async function get_encounter_info(encID) {
   const avgTeamDPSTaken = avgTeamDamageTaken / fightDuration;
 
   const avgAPUptime =
-    playerInfo
-      .filter((player) => !player.isSupport)
-      .map((player) => player.supAPUptime)
-      .reduce((a, b) => a + b, 0) / nDPS;
+    nDPS > 0
+      ? playerInfo
+          .filter((player) => !player.isSupport)
+          .map((player) => player.supAPUptime)
+          .reduce((a, b) => a + b, 0) / nDPS
+      : 0;
   const avgBrandUptime =
-    playerInfo
-      .filter((player) => !player.isSupport)
-      .map((player) => player.supBrandUptime)
-      .reduce((a, b) => a + b, 0) / nDPS;
+    nDPS > 0
+      ? playerInfo
+          .filter((player) => !player.isSupport)
+          .map((player) => player.supBrandUptime)
+          .reduce((a, b) => a + b, 0) / nDPS
+      : 0;
   const avgIdentityUptime =
-    playerInfo
-      .filter((player) => !player.isSupport)
-      .map((player) => player.supIdentityUptime)
-      .reduce((a, b) => a + b, 0) / nDPS;
+    nDPS > 0
+      ? playerInfo
+          .filter((player) => !player.isSupport)
+          .map((player) => player.supIdentityUptime)
+          .reduce((a, b) => a + b, 0) / nDPS
+      : 0;
 
   return {
     id: encID,
@@ -417,7 +357,7 @@ async function get_encounter_info(encID) {
 }
 
 const encounterInfos = [];
-if (!!filteredIDs) {
+if (filteredIDs.length > 0) {
   const names = nameFilter.split(",").map((name) => name.trim());
   for (let i = 0; i < filteredIDs.length; i++) {
     try {
@@ -443,6 +383,106 @@ if (!!filteredIDs) {
 // display(encounterInfos);
 ```
 
+**${selectedEncounter ? selectedEncounter : ""}**
+
+```js boss info / encounter summaries
+let totalDuration,
+  avgPullDuration,
+  avgTeamDPS,
+  avgTeamDmgTaken,
+  avgTeamDPSTaken,
+  avgAPUptime,
+  avgBrandUptime,
+  avgIdentityUptime,
+  bestEncounter,
+  avgBossBarsComplete;
+
+if (!!selectedEncounter) {
+  totalDuration = tableEncounters
+    .map((enc) => enc.duration)
+    .reduce((a, b) => a + b, 0);
+  avgPullDuration = totalDuration / tableEncounters.length;
+
+  avgTeamDPS =
+    tableEncounters.map((enc) => enc.avgTeamDps).reduce((a, b) => a + b, 0) /
+    tableEncounters.length;
+
+  avgTeamDmgTaken =
+    tableEncounters
+      .map((enc) => enc.avgTeamDamageTaken)
+      .reduce((a, b) => a + b, 0) / tableEncounters.length;
+  avgTeamDPSTaken =
+    tableEncounters
+      .map((enc) => enc.avgTeamDPSTaken)
+      .reduce((a, b) => a + b, 0) / tableEncounters.length;
+
+  avgAPUptime =
+    tableEncounters.map((enc) => enc.avgAPUptime).reduce((a, b) => a + b, 0) /
+    tableEncounters.length;
+  avgBrandUptime =
+    tableEncounters
+      .map((enc) => enc.avgBrandUptime)
+      .reduce((a, b) => a + b, 0) / tableEncounters.length;
+  avgIdentityUptime =
+    tableEncounters
+      .map((enc) => enc.avgIdentityUptime)
+      .reduce((a, b) => a + b, 0) / tableEncounters.length;
+
+  bestEncounter = tableEncounters.reduce((a, b) =>
+    a.barsComplete > b.barsComplete ? a : b
+  );
+
+  avgBossBarsComplete = Math.round(
+    tableEncounters.map((enc) => enc.barsComplete).reduce((a, b) => a + b, 0) /
+      tableEncounters.length
+  );
+
+  // display(bestEncounter);
+}
+```
+
+```js summary div
+if (!!selectedEncounter) {
+  display(html`<div class="grid grid-cols-3 card" style="grid-auto-rows: auto;">
+    <div>
+      Pulls: ${tableEncounters.length} (${formatDuration(avgPullDuration)} per
+      pull)
+      <br />
+      Total Prog Time: ${formatDuration(totalDuration)}
+    </div>
+    <div>
+      Avg Team DPS: ${formatMillions(avgTeamDPS)}
+      <br />
+      Avg Dmg Taken: ${formatThousands(avgTeamDmgTaken)} (${formatThousands(
+        avgTeamDPSTaken
+      )} DPS)
+    </div>
+    <div>
+      Avg Sup. Performance: ${Math.round(avgAPUptime * 100)}/${Math.round(
+        avgBrandUptime * 100
+      )}/${Math.round(avgIdentityUptime * 100)}
+      <br />
+      Avg Complete: ${avgBossBarsComplete}/${selectedBossTotalBars} bars
+    </div>
+    <div class="grid-colspan-3">
+      <b>Best Run —</b> Log ID: ${bestEncounter.id} - Bars complete: ${bestEncounter.barsComplete}/${selectedBossTotalBars}
+      - Duration: ${formatDuration(bestEncounter.duration)} - Cleared: ${bestEncounter.cleared ==
+      1
+        ? "Yes"
+        : "No"}
+      <br />
+      DPS: ${formatMillions(bestEncounter.avgTeamDps)} - Total Damage Taken: ${formatThousands(
+        bestEncounter.avgTeamDamageTaken
+      )} - Average Support Performance: ${Math.round(
+        bestEncounter.avgAPUptime * 100
+      )}/${Math.round(bestEncounter.avgBrandUptime * 100)}/${Math.round(
+        bestEncounter.avgIdentityUptime * 100
+      )}
+    </div>
+  </div> `);
+}
+```
+
 **${selectedEncounter ? "Pulls" : ""}**
 
 ```js encounters table
@@ -460,9 +500,9 @@ function sparkbar(max) {
 }
 
 const subBossFormat = {
-  DPS: formatMillions,
-  "Dmg Taken": formatThousands,
-  "DPS Taken": formatThousands,
+  "DPS (Total)": formatMillions,
+  Duration: formatDuration,
+  "DPS Taken (Total)": formatThousands,
 };
 const subBossWidths = {};
 let encounterTable, tableSelect;
@@ -477,10 +517,9 @@ if (!!selectedEncounter) {
       ID: enc.id.toString(),
       "Bars Complete": enc.barsComplete,
       Duration: enc.duration,
-      DPS: enc.avgTeamDps,
-      "Dmg Taken": enc.avgTeamDamageTaken,
-      "DPS Taken": enc.avgTeamDPSTaken,
-      "Sup. Perf.": `${Math.round(enc.avgAPUptime * 100)}/${Math.round(
+      "DPS (Total)": enc.avgTeamDps,
+      "DPS Taken (Total)": enc.avgTeamDPSTaken,
+      "Sup. Perf. ": `${Math.round(enc.avgAPUptime * 100)}/${Math.round(
         enc.avgBrandUptime * 100
       )}/${Math.round(enc.avgIdentityUptime * 100)}`,
       Deaths: enc.playerInfo
@@ -503,6 +542,7 @@ if (!!selectedEncounter) {
 
   tableSelect = view(
     Inputs.table(encounterTable, {
+      select: true,
       value: encounterTable,
       format: subBossFormat,
       width: subBossWidths,
@@ -512,11 +552,21 @@ if (!!selectedEncounter) {
 }
 ```
 
+```js table selected encounters
+let tableEncounters;
+if (!!selectedEncounter) {
+  tableEncounters = encounterInfos.filter((enc) => {
+    const selectedIDs = tableSelect.map((row) => row.ID);
+    return selectedIDs.includes(enc.id.toString());
+  });
+}
+```
+
 **${selectedEncounter ? "Player Summaries" : ""}**
 
 ```js player table
 if (!!selectedEncounter) {
-  const dpsNames = encounterInfos
+  const dpsNames = tableEncounters
     .map((enc) =>
       enc.playerInfo
         .filter((player) => !supportClasses.includes(player["class"]))
@@ -524,7 +574,7 @@ if (!!selectedEncounter) {
     )
     .flat()
     .filter((name, i, arr) => arr.indexOf(name) === i);
-  const supNames = encounterInfos
+  const supNames = tableEncounters
     .map((enc) =>
       enc.playerInfo
         .filter((player) => supportClasses.includes(player["class"]))
@@ -534,48 +584,52 @@ if (!!selectedEncounter) {
     .filter((name, i, arr) => arr.indexOf(name) === i);
 
   const dpsTable = dpsNames.map((name) => {
-    const playerInfo = encounterInfos
+    const playerInfo = tableEncounters
       .map((enc) => enc.playerInfo.filter((player) => player.name === name))
       .flat();
 
     const row = {
       Name: name,
       Class: playerInfo[0].class,
+      Pulls: playerInfo.length,
       "Last Party": playerInfo[playerInfo.length - 1].party,
-      DPS:
+      "DPS (Avg)":
         playerInfo.map((player) => player.dps).reduce((a, b) => a + b, 0) /
         playerInfo.length,
       "Crit Rate":
         playerInfo
           .map((player) => player.critPercent)
           .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "Front Attack":
+      "FA Rate":
         playerInfo
           .map((player) => player.frontPercent)
           .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "Back Attack":
+      "BA Rate":
         playerInfo
           .map((player) => player.backPercent)
           .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "Dmg Taken":
+      "Dmg Taken (Avg)":
         playerInfo
           .map((player) => player.damageTaken)
           .reduce((a, b) => a + b, 0) / playerInfo.length,
-      Deaths: playerInfo
+      "Deaths / Pull":
+        playerInfo.map((player) => player.deaths).reduce((a, b) => a + b, 0) /
+        playerInfo.length,
+      "Deaths (Total)": playerInfo
         .map((player) => player.deaths)
         .reduce((a, b) => a + b, 0),
-      Pulls: playerInfo.length,
+      Clears: playerInfo.filter((player) => player.cleared == 1).length,
     };
 
     return row;
   });
 
   const supTable = supNames.map((name) => {
-    const playerEncs = encounterInfos.filter((enc) =>
+    const playerEncs = tableEncounters.filter((enc) =>
       enc.playerInfo.map((player) => player.name).includes(name)
     );
 
-    const playerAllies = [];
+    let playerAllies = [];
     const player = [];
     for (let i = 0; i < playerEncs.length; i++) {
       const playerParty = playerEncs[i].playerInfo.filter(
@@ -593,11 +647,16 @@ if (!!selectedEncounter) {
       );
     }
 
+    playerAllies = playerAllies.filter((ally) => ally.length > 0);
+
     const playerClass = player[0].class;
     const playerParty = player[player.length - 1].party;
     const playerDeaths = player
       .map((player) => player.deaths)
       .reduce((a, b) => a + b, 0);
+    const playerShielded =
+      player.map((player) => player.shielded).reduce((a, b) => a + b, 0) /
+      player.length;
 
     const allyAPUptime =
       playerAllies
@@ -628,18 +687,23 @@ if (!!selectedEncounter) {
         )
         .reduce((a, b) => a + b, 0) / playerAllies.length;
 
+    // console.log(playerAllies);
+
     const row = {
       Name: name,
       Class: playerClass,
+      Pulls: player.length,
       "Last Party": playerParty,
       "AP %": allyAPUptime,
       "Brand %": allyBrandUptime,
       "Identity %": allyIdentityUptime,
-      "Dmg Taken":
+      "Dmg Shielded (Avg)": playerShielded,
+      "Dmg Taken (Avg)":
         player.map((player) => player.damageTaken).reduce((a, b) => a + b, 0) /
         player.length,
-      Deaths: playerDeaths,
-      Pulls: player.length,
+      "Deaths / Pull": playerDeaths / player.length,
+      "Total Deaths": playerDeaths,
+      Clears: player.filter((player) => player.cleared == 1).length,
     };
 
     return row;
@@ -651,11 +715,12 @@ if (!!selectedEncounter) {
       sort: "Pulls",
       reverse: true,
       format: {
-        DPS: formatMillions,
+        "DPS (Avg)": formatMillions,
         "Crit Rate": formatPercent,
-        "Front Attack": formatPercent,
-        "Back Attack": formatPercent,
-        "Dmg Taken": formatThousands,
+        "FA Rate": formatPercent,
+        "BA Rate": formatPercent,
+        "Dmg Taken (Avg)": formatThousands,
+        "Last Party": (x) => x + 1,
       },
     })
   );
@@ -669,152 +734,11 @@ if (!!selectedEncounter) {
         "AP %": formatPercent,
         "Brand %": formatPercent,
         "Identity %": formatPercent,
-        "Dmg Taken": formatThousands,
+        "Dmg Shielded (Avg)": formatThousands,
+        "Dmg Taken (Avg)": formatThousands,
+        "Last Party": (x) => x + 1,
       },
     })
   );
 }
 ```
-
-<!-- # Dev preview
-
-```js prog line plot dimensions
-const width = Generators.width(document.querySelector("main"));
-const plotHeight = tableSelect.length * 40;
-const margins = { top: 10, right: 10, bottom: 10, left: 10 };
-const xAxisHeight = 30;
-const yAxisWidth = 50;
-const height = plotHeight + margins.top + margins.bottom + xAxisHeight;
-```
-
-```js prog line plot
-console.log(tableSelect);
-// Create x-scale based on bars
-const xScale = d3
-  .scaleLinear()
-  .domain([0, selectedBossTotalBars])
-  .range([margins.left + yAxisWidth, width - margins.right]);
-
-// Create y-scale based on encounters
-const yScale = d3
-  .scaleBand()
-  .domain(tableSelect.map((d) => d.ID))
-  .range([margins.top + xAxisHeight, height - margins.bottom])
-  .paddingInner(0.3)
-  .paddingOuter(0.25);
-
-// Create SVG container
-const svg = d3
-  .create("svg")
-  .attr("width", width)
-  .attr("height", height)
-  .style("background", "transparent");
-
-const g = svg.append("g").selectAll("g").data(tableSelect).join("g");
-
-// Add a rectangle for each encounter for each boss
-// console.log(selectedBossNames.length);
-for (let i = selectedBossNames.length - 1; i >= 0; i--) {
-  const previousBosses = selectedBossNames.slice(0, i);
-  // console.log(i);
-
-  const bossBars = g
-    .append("g")
-    .attr("visibility", (d) => {
-      return typeof d[selectedBossNames[i]] !== "undefined" &&
-        d[selectedBossNames[i]] !== 0
-        ? "visible"
-        : "hidden";
-    })
-    .attr("transform", (d) => {
-      const previousBarX = previousBosses
-        .map((boss) => d[boss])
-        .filter((x) => x)
-        .reduce((a, b) => a + b, 0);
-      return `translate(${xScale(previousBarX)}, 0)`;
-    })
-    .attr("id", selectedBossNames[i]);
-
-  bossBars
-    .append("rect")
-    .attr("x", 0)
-    .attr("y", (d) => yScale(d.ID))
-    .attr("width", (d) => {
-      return xScale(d[selectedBossNames[i]]) - xScale(0);
-    })
-    // .attr("width", 20)
-    .attr("height", yScale.bandwidth())
-    .attr("fill", "var(--theme-foreground-faintest)")
-    .attr("stroke", "var(--theme-foreground)");
-
-  bossBars
-    .append("text")
-    .attr("x", 2)
-    .attr("y", (d) => yScale(d.ID) + yScale.bandwidth() - 6)
-    .attr("dy", "0.35em")
-    .attr("fill", "var(--theme-foreground)")
-    .style("font", "10px/1.6 var(--sans-serif)")
-    .text((d) => `${d[selectedBossNames[i]]} - ${selectedBossNames[i]}`);
-}
-
-// Draw an extra rectangle at the end to fill in the rest
-g.append("rect")
-  .attr("x", (d) => {
-    const previousBarX = selectedBossNames
-      .map((boss) => d[boss])
-      .filter((x) => x)
-      .reduce((a, b) => a + b, 0);
-    return xScale(previousBarX);
-  })
-  .attr("y", (d) => yScale(d.ID))
-  .attr("width", (d) => {
-    return xScale(selectedBossTotalBars) - xScale(0);
-  })
-  .attr("height", yScale.bandwidth())
-  .attr("fill", "var(--theme-background)");
-
-// Add x-axis
-const xAxis = d3.axisTop(xScale).tickFormat((d) => d + 1);
-svg
-  .append("g")
-  .call(xAxis)
-  .attr("transform", `translate(0, ${margins.top + xAxisHeight})`);
-svg
-  .append("text")
-  .attr("x", width / 2)
-  .attr("y", margins.top + xAxisHeight - 30)
-  .attr("text-anchor", "middle")
-  .attr("fill", "var(--theme-foreground)")
-  .style("font", "10px/1.6 var(--sans-serif)")
-  .text("Bars Remaining");
-
-// Add y-axis
-const yAxis = d3.axisLeft(yScale).tickFormat((d) => d);
-svg.append("g").call(yAxis).attr("transform", `translate(${yAxisWidth}, 0)`);
-svg
-  .append("text")
-  .attr("x", -height / 2)
-  .attr("y", margins.left + yAxisWidth - 50)
-  .attr("text-anchor", "middle")
-  .attr("transform", "rotate(-90)")
-  .attr("fill", "var(--theme-foreground)")
-  .style("font", "10px/1.6 var(--sans-serif)")
-  .text("Log ID");
-
-display(svg.node());
-```
-
-```js encounter preview table
-const encounterPreview = await db.sql`SELECT * FROM encounter_preview`;
-display(Inputs.table(encounterPreview, { select: false }));
-```
-
-```js encounter table
-const encounter = await db.sql`SELECT * FROM encounter`;
-display(Inputs.table(encounter, { select: false }));
-```
-
-```js entity table
-const entity = await db.sql`SELECT * FROM entity`;
-display(Inputs.table(entity, { select: false }));
-``` -->
