@@ -263,7 +263,7 @@ async function get_encounter_info(encID) {
       damageInfo = JSON.parse(damageInfo);
     }
 
-    const realDeath = encounterEnd - damageInfo["deathTime"] > 500;
+    const realDeath = encounterEnd - damageInfo["deathTime"] > 1000;
 
     const party = partyNumbers
       ? Number(
