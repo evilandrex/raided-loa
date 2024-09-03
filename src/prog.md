@@ -357,7 +357,7 @@ async function get_encounter_info(encID) {
 }
 
 const encounterInfos = [];
-if (filteredIDs.length > 0) {
+if (!!selectedEncounter) {
   const names = nameFilter.split(",").map((name) => name.trim());
   for (let i = 0; i < filteredIDs.length; i++) {
     try {
