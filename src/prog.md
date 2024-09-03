@@ -80,6 +80,7 @@ if (!!file) {
 
 ```js constants
 import pako from "npm:pako";
+import SQLite from "npm:@observablehq/sqlite";
 
 const encounterDict = await FileAttachment("encounters.json").json();
 const encounters = Object.keys(encounterDict)
@@ -675,7 +676,7 @@ if (!!selectedEncounter) {
 }
 ```
 
-<!-- # Dev preview
+# Dev preview
 
 ```js prog line plot dimensions
 const width = Generators.width(document.querySelector("main"));
@@ -816,4 +817,4 @@ display(Inputs.table(encounter, { select: false }));
 ```js entity table
 const entity = await db.sql`SELECT * FROM entity`;
 display(Inputs.table(entity, { select: false }));
-``` -->
+```
