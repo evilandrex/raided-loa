@@ -13,6 +13,7 @@ toc: false
       ${dateEndSelect ? dateEndSelect : ""}
       ${minDurationRange ? minDurationRange : ""}
       ${nameTextArea ? nameTextArea : ""}
+      ${clearedToggle ? clearedToggle : ""}
     </div>
     <div>
         Load your encounters.db to show analysis tools. This file can be found 
@@ -65,7 +66,7 @@ function formatDuration(x) {
 ```
 
 ```js uploader
-const fileUpload = Inputs.file();
+const fileUpload = Inputs.file({ label: "Load encounters.db", accept: ".db" });
 const file = Generators.input(fileUpload);
 ```
 
@@ -146,6 +147,14 @@ if (!!db) {
 }
 ```
 
+```js cleared toggle filter
+const clearedToggle = Inputs.toggle({
+  label: "Show only cleared",
+  value: false,
+});
+const filterCleared = Generators.input(clearedToggle);
+```
+
 ```js boss info
 let selectedBossNames, selectedBossBars, selectedBossTotalBars;
 
@@ -180,6 +189,7 @@ if (!!selectedEncounter) {
       AND difficulty IN (${selectedDiff.map((diff) => `'${diff}'`).join(", ")}) 
       AND fight_start BETWEEN '${dateStart.getTime()}' AND '${dateEnd.getTime()}'
       AND duration >= ${minDuration * 1000}
+      ${filterCleared ? "AND cleared = 1" : ""}
   `;
 
   // console.log(filterQuery);
@@ -256,6 +266,7 @@ async function get_encounter_info(encID) {
   const playerInfo = [];
   for (let i = 0; i < playerEntities.length; i++) {
     const entity = playerEntities[i];
+    const skillStats = JSON.parse(entity["skill_stats"]);
     let damageInfo = entity["damage_stats"];
     if (typeof damageInfo === "object") {
       let inflated = pako.inflate(entity["damage_stats"]);
@@ -286,9 +297,9 @@ async function get_encounter_info(encID) {
       supIdentityUptime:
         damageInfo["buffedByIdentity"] / damageInfo["damageDealt"],
       shielded: damageInfo["damageAbsorbedOnOthers"],
-      critPercent: damageInfo["critDamage"] / damageInfo["damageDealt"],
-      frontPercent: damageInfo["frontAttackDamage"] / damageInfo["damageDealt"],
-      backPercent: damageInfo["backAttackDamage"] / damageInfo["damageDealt"],
+      critPercent: skillStats["crits"] / skillStats["hits"],
+      frontPercent: skillStats["frontAttacks"] / skillStats["hits"],
+      backPercent: skillStats["backAttacks"] / skillStats["hits"],
       damageTaken: damageInfo["damageTaken"],
       deaths: realDeath ? damageInfo["deaths"] : damageInfo["deaths"] - 1,
       deathTime: realDeath ? damageInfo["deathTime"] : 0,
