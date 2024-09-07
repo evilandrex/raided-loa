@@ -148,11 +148,14 @@ if (!!db) {
 ```
 
 ```js cleared toggle filter
-const clearedToggle = Inputs.toggle({
-  label: "Show only cleared",
-  value: false,
-});
-const filterCleared = Generators.input(clearedToggle);
+let clearedToggle, filterCleared;
+if (!!db) {
+  clearedToggle = Inputs.toggle({
+    label: "Show only cleared",
+    value: false,
+  });
+  filterCleared = Generators.input(clearedToggle);
+}
 ```
 
 ```js boss info
@@ -165,7 +168,7 @@ if (!!selectedEncounter) {
     .filter((bars) => !!bars)
     .reduce((a, b) => a + b, 0);
 }
-```
+````
 
 ```js filtered encounters
 let filteredIDs;
