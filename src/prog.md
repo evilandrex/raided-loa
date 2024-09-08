@@ -12,6 +12,7 @@ toc: false
       ${dateStartSelect ? dateStartSelect : ""}
       ${dateEndSelect ? dateEndSelect : ""}
       ${minDurationRange ? minDurationRange : ""}
+      ${maxDurationRange ? maxDurationRange : ""}
       ${nameTextArea ? nameTextArea : ""}
       ${clearedToggle ? clearedToggle : ""}
     </div>
@@ -135,6 +136,19 @@ if (!!db) {
 }
 ```
 
+```js max duration filter
+let maxDuration, maxDurationRange;
+if (!!db) {
+  maxDurationRange = Inputs.range([0, 1200], {
+    label: "Max Duration (s)",
+    step: 10,
+    value: 1200,
+  });
+
+  maxDuration = Generators.input(maxDurationRange);
+}
+```
+
 ```js name filters
 let nameTextArea, nameFilter;
 if (!!db) {
@@ -168,7 +182,7 @@ if (!!selectedEncounter) {
     .filter((bars) => !!bars)
     .reduce((a, b) => a + b, 0);
 }
-````
+```
 
 ```js filtered encounters
 let filteredIDs;
@@ -191,7 +205,7 @@ if (!!selectedEncounter) {
         .join(", ")})
       AND difficulty IN (${selectedDiff.map((diff) => `'${diff}'`).join(", ")}) 
       AND fight_start BETWEEN '${dateStart.getTime()}' AND '${dateEnd.getTime()}'
-      AND duration >= ${minDuration * 1000}
+      AND duration BETWEEN ${minDuration * 1000} AND ${maxDuration * 1000}
       ${filterCleared ? "AND cleared = 1" : ""}
   `;
 
