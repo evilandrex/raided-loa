@@ -139,10 +139,10 @@ if (!!db) {
 ```js max duration filter
 let maxDuration, maxDurationRange;
 if (!!db) {
-  maxDurationRange = Inputs.range([0, 1200], {
+  maxDurationRange = Inputs.range([0, 1800], {
     label: "Max Duration (s)",
     step: 10,
-    value: 1200,
+    value: 1800,
   });
 
   maxDuration = Generators.input(maxDurationRange);
