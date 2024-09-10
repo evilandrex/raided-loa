@@ -407,6 +407,8 @@ if (!!selectedEncounter) {
       console.log(e);
     }
   }
+  encounterInfos.sort((a, b) => a['id'] - b['id'])
+  console.log(encounterInfos)
 }
 
 // display(encounterInfos);
@@ -529,6 +531,7 @@ function sparkbar(max) {
 }
 
 const subBossFormat = {
+  "ID": String,
   "DPS (Total)": formatMillions,
   Duration: formatDuration,
   "DPS Taken (Total)": formatThousands,
@@ -543,7 +546,7 @@ if (!!selectedEncounter) {
 
   encounterTable = encounterInfos.map((enc) => {
     const row = {
-      ID: enc.id.toString(),
+      ID: enc.id,
       "Bars Complete": enc.barsComplete,
       Duration: enc.duration,
       "DPS (Total)": enc.avgTeamDps,
@@ -586,7 +589,7 @@ let tableEncounters;
 if (!!selectedEncounter) {
   tableEncounters = encounterInfos.filter((enc) => {
     const selectedIDs = tableSelect.map((row) => row.ID);
-    return selectedIDs.includes(enc.id.toString());
+    return selectedIDs.includes(enc.id);
   });
 }
 ```
@@ -770,4 +773,130 @@ if (!!selectedEncounter) {
     })
   );
 }
+```
+
+```js
+const width = Generators.width(document.querySelector("main"));
+const plotHeight = tableSelect.length * 40;
+const margins = { top: 10, right: 10, bottom: 10, left: 10 };
+const xAxisHeight = 30;
+const yAxisWidth = 50;
+const height = plotHeight + margins.top + margins.bottom + xAxisHeight;
+```
+
+```js
+console.log(tableSelect);
+// Create x-scale based on bars
+const xScale = d3
+  .scaleLinear()
+  .domain([0, selectedBossTotalBars])
+  .range([margins.left + yAxisWidth, width - margins.right]);
+
+// Create y-scale based on encounters
+const yScale = d3
+  .scaleBand()
+  .domain(tableSelect.map((d) => d.ID))
+  .range([margins.top + xAxisHeight, height - margins.bottom])
+  .paddingInner(0.3)
+  .paddingOuter(0.25);
+
+// Create SVG container
+const svg = d3
+  .create("svg")
+  .attr("width", width)
+  .attr("height", height)
+  .style("background", "transparent");
+
+const g = svg.append("g").selectAll("g").data(tableSelect).join("g");
+
+// Add a rectangle for each encounter for each boss
+// console.log(selectedBossNames.length);
+for (let i = selectedBossNames.length - 1; i >= 0; i--) {
+  const previousBosses = selectedBossNames.slice(0, i);
+  // console.log(i);
+
+  const bossBars = g
+    .append("g")
+    .attr("visibility", (d) => {
+      return typeof d[selectedBossNames[i]] !== "undefined" &&
+        d[selectedBossNames[i]] !== 0
+        ? "visible"
+        : "hidden";
+    })
+    .attr("transform", (d) => {
+      const previousBarX = previousBosses
+        .map((boss) => d[boss])
+        .filter((x) => x)
+        .reduce((a, b) => a + b, 0);
+      return `translate(${xScale(previousBarX)}, 0)`;
+    })
+    .attr("id", selectedBossNames[i]);
+
+  bossBars
+    .append("rect")
+    .attr("x", 0)
+    .attr("y", (d) => yScale(d.ID))
+    .attr("width", (d) => {
+      return xScale(d[selectedBossNames[i]]) - xScale(0);
+    })
+    // .attr("width", 20)
+    .attr("height", yScale.bandwidth())
+    .attr("fill", "var(--theme-foreground-faintest)")
+    .attr("stroke", "var(--theme-foreground)");
+
+  bossBars
+    .append("text")
+    .attr("x", 2)
+    .attr("y", (d) => yScale(d.ID) + yScale.bandwidth() - 6)
+    .attr("dy", "0.35em")
+    .attr("fill", "var(--theme-foreground)")
+    .style("font", "10px/1.6 var(--sans-serif)")
+    .text((d) => `${d[selectedBossNames[i]]} - ${selectedBossNames[i]}`);
+}
+
+// Draw an extra rectangle at the end to fill in the rest
+g.append("rect")
+  .attr("x", (d) => {
+    const previousBarX = selectedBossNames
+      .map((boss) => d[boss])
+      .filter((x) => x)
+      .reduce((a, b) => a + b, 0);
+    return xScale(previousBarX);
+  })
+  .attr("y", (d) => yScale(d.ID))
+  .attr("width", (d) => {
+    return xScale(selectedBossTotalBars) - xScale(0);
+  })
+  .attr("height", yScale.bandwidth())
+  .attr("fill", "var(--theme-background)");
+
+// Add x-axis
+const xAxis = d3.axisTop(xScale).tickFormat((d) => d + 1);
+svg
+  .append("g")
+  .call(xAxis)
+  .attr("transform", `translate(0, ${margins.top + xAxisHeight})`);
+svg
+  .append("text")
+  .attr("x", width / 2)
+  .attr("y", margins.top + xAxisHeight - 30)
+  .attr("text-anchor", "middle")
+  .attr("fill", "var(--theme-foreground)")
+  .style("font", "10px/1.6 var(--sans-serif)")
+  .text("Bars Remaining");
+
+// Add y-axis
+const yAxis = d3.axisLeft(yScale).tickFormat((d) => d);
+svg.append("g").call(yAxis).attr("transform", `translate(${yAxisWidth}, 0)`);
+svg
+  .append("text")
+  .attr("x", -height / 2)
+  .attr("y", margins.left + yAxisWidth - 50)
+  .attr("text-anchor", "middle")
+  .attr("transform", "rotate(-90)")
+  .attr("fill", "var(--theme-foreground)")
+  .style("font", "10px/1.6 var(--sans-serif)")
+  .text("Log ID");
+
+display(svg.node());
 ```
