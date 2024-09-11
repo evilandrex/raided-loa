@@ -407,8 +407,7 @@ if (!!selectedEncounter) {
       console.log(e);
     }
   }
-  encounterInfos.sort((a, b) => a['id'] - b['id'])
-  console.log(encounterInfos)
+  encounterInfos.sort((a, b) => a["id"] - b["id"]);
 }
 
 // display(encounterInfos);
@@ -531,7 +530,7 @@ function sparkbar(max) {
 }
 
 const subBossFormat = {
-  "ID": String,
+  ID: String,
   "DPS (Total)": formatMillions,
   Duration: formatDuration,
   "DPS Taken (Total)": formatThousands,
@@ -756,7 +755,7 @@ if (!!selectedEncounter) {
       },
     })
   );
-  display(html`<hr />`);
+  display(html`<p>Supports</p>`);
   display(
     Inputs.table(supTable, {
       select: false,
@@ -776,127 +775,239 @@ if (!!selectedEncounter) {
 ```
 
 ```js
-const width = Generators.width(document.querySelector("main"));
-const plotHeight = tableSelect.length * 40;
-const margins = { top: 10, right: 10, bottom: 10, left: 10 };
-const xAxisHeight = 30;
-const yAxisWidth = 50;
-const height = plotHeight + margins.top + margins.bottom + xAxisHeight;
+const x1Select = Inputs.select(
+  ["DPS (Total)", "Sup. Perf. ", "Bars Complete", "Duration"],
+  {
+    label: "Top X Data",
+    value: "DPS (Total)",
+  }
+);
+const x2Select = Inputs.select(
+  ["DPS (Total)", "Sup. Perf. ", "Bars Complete", "Duration"],
+  {
+    label: "Bottom X Data",
+    value: "Bars Complete",
+  }
+);
+
+const aggStatSelect = Inputs.select(["Average", "Max"], {
+  label: "Aggregate Stat",
+});
+const aggWindowSelect = Inputs.select(["Batched", "Rolling Window"], {
+  label: "Aggregate Method",
+});
+const aggWindowRange = Inputs.range([1, 20], {
+  label: "Aggregate Window",
+  step: 1,
+  value: 10,
+});
+
+const x1Var = Generators.input(x1Select);
+const x2Var = Generators.input(x2Select);
+const aggStat = Generators.input(aggStatSelect);
+const aggWindowMethod = Generators.input(aggWindowSelect);
+const aggWindow = Generators.input(aggWindowRange);
 ```
 
-```js
-console.log(tableSelect);
-// Create x-scale based on bars
-const xScale = d3
-  .scaleLinear()
-  .domain([0, selectedBossTotalBars])
-  .range([margins.left + yAxisWidth, width - margins.right]);
+**${selectedEncounter ? "Progression Graph" : ""}**
 
-// Create y-scale based on encounters
-const yScale = d3
-  .scaleBand()
-  .domain(tableSelect.map((d) => d.ID))
-  .range([margins.top + xAxisHeight, height - margins.bottom])
-  .paddingInner(0.3)
-  .paddingOuter(0.25);
+```js figure control div
+if (!!selectedEncounter) {
+  display(html`<div class="card grid grid-cols-2" style="grid-auto-rows: auto;">
+    <div>${x1Select} ${x2Select}</div>
+    <div>${aggStatSelect} ${aggWindowSelect} ${aggWindowRange}</div>
+  </div>`);
+}
+```
 
-// Create SVG container
-const svg = d3
-  .create("svg")
-  .attr("width", width)
-  .attr("height", height)
-  .style("background", "transparent");
+```js figure aggregate
+let figureData;
+if (!!selectedEncounter) {
+  const figureOrigData = tableSelect.slice();
+  figureOrigData.sort((a, b) => a.id - b.id);
 
-const g = svg.append("g").selectAll("g").data(tableSelect).join("g");
+  function aggData(logs, column, stat) {
+    if (stat == "Average") {
+      const nLogs = logs.length;
+      return column == "Sup. Perf. "
+        ? logs
+            .map((d) =>
+              d["Sup. Perf. "]
+                .split("/")
+                .map((d) => Number(d))
+                .reduce((a, b) => a + b, 0)
+            )
+            .reduce((a, b) => a + b, 0) / nLogs
+        : logs.map((d) => d[column]).reduce((a, b) => a + b, 0) / nLogs;
+    } else if (stat == "Max") {
+      return column == "Sup. Perf. "
+        ? Math.max(
+            ...logs.map((d) =>
+              d["Sup. Perf. "]
+                .split("/")
+                .map((d) => Number(d))
+                .reduce((a, b) => a + b, 0)
+            )
+          )
+        : Math.max(...logs.map((d) => d[column]));
+    }
+  }
 
-// Add a rectangle for each encounter for each boss
-// console.log(selectedBossNames.length);
-for (let i = selectedBossNames.length - 1; i >= 0; i--) {
-  const previousBosses = selectedBossNames.slice(0, i);
-  // console.log(i);
+  figureData = [];
+  let i;
+  if (aggWindowMethod == "Batched") {
+    const steps = Math.ceil(figureOrigData.length / aggWindow);
+    for (i = 0; i < steps; i++) {
+      const windowLogs = figureOrigData.slice(
+        aggWindow * i,
+        aggWindow * (i + 1)
+      );
+      const nLogs = windowLogs.length;
 
-  const bossBars = g
-    .append("g")
-    .attr("visibility", (d) => {
-      return typeof d[selectedBossNames[i]] !== "undefined" &&
-        d[selectedBossNames[i]] !== 0
-        ? "visible"
-        : "hidden";
-    })
-    .attr("transform", (d) => {
-      const previousBarX = previousBosses
-        .map((boss) => d[boss])
-        .filter((x) => x)
-        .reduce((a, b) => a + b, 0);
-      return `translate(${xScale(previousBarX)}, 0)`;
-    })
-    .attr("id", selectedBossNames[i]);
+      const ids = windowLogs.map((d) => d["ID"]);
+      const y =
+        aggWindow > 1 ? `${ids[0]}-${ids[ids.length - 1]}` : String(ids[0]);
 
-  bossBars
+      figureData.push({
+        y: y,
+        x1: aggData(windowLogs, x1Var, aggStat),
+        x2: aggData(windowLogs, x2Var, aggStat),
+      });
+    }
+  } else if (aggWindowMethod == "Rolling Window") {
+    let backHalf = Math.floor((aggWindow - 1) / 2);
+    let frontHalf = Math.ceil((aggWindow - 1) / 2) + 1;
+    for (i = 0; i < figureOrigData.length; i++) {
+      const startIdx = i - backHalf < 0 ? 0 : i - backHalf;
+      const windowLogs = figureOrigData.slice(startIdx, i + frontHalf);
+      const nLogs = windowLogs.length;
+
+      figureData.push({
+        y: figureOrigData[i].ID,
+        x1: aggData(windowLogs, x1Var, aggStat),
+        x2: aggData(windowLogs, x2Var, aggStat),
+      });
+    }
+  }
+}
+```
+
+```js figure dimensions
+let width, plotHeight, margins, xAxisHeight, yAxisWidth, height;
+if (!!selectedEncounter) {
+  width = Generators.width(document.querySelector("main"));
+  plotHeight = figureData.length * 30;
+  margins = { top: 10, right: 10, bottom: 10, left: 10 };
+  xAxisHeight = 30;
+  yAxisWidth = 75;
+  height = plotHeight + margins.top + margins.bottom + xAxisHeight * 2;
+}
+```
+
+```js figure
+if (!!selectedEncounter) {
+  const x1Max =
+    x1Var == "Sup. Perf. " ? 300 : Math.max(...figureData.map((d) => d.x1));
+  const x2Max =
+    x2Var == "Sup. Perf. " ? 300 : Math.max(...figureData.map((d) => d.x2));
+
+  // Create x-scale based x1/x2
+  const x1Scale = d3
+    .scaleLinear()
+    .domain([0, x1Max])
+    .range([0, width - margins.right - yAxisWidth]);
+  const x2Scale = d3
+    .scaleLinear()
+    .domain([0, x2Max])
+    .range([0, width - margins.right - yAxisWidth]);
+
+  // Create y-scale based on y
+  const yScale = d3
+    .scaleBand()
+    .domain(figureData.map((d) => d.y))
+    .range([margins.top + xAxisHeight, height - margins.bottom - xAxisHeight])
+    .paddingInner(0.3)
+    .paddingOuter(0.25);
+
+  // Create SVG container
+  const svg = d3
+    .create("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .style("background", "transparent");
+
+  const fig = svg.append("g");
+  const bars = fig
+    .selectAll("g")
+    .data(figureData)
+    .join("g")
+    .attr("transform", `translate(${yAxisWidth}, 0)`);
+
+  // Draw a rectangle for each entry of x1
+  bars
     .append("rect")
-    .attr("x", 0)
-    .attr("y", (d) => yScale(d.ID))
-    .attr("width", (d) => {
-      return xScale(d[selectedBossNames[i]]) - xScale(0);
-    })
-    // .attr("width", 20)
-    .attr("height", yScale.bandwidth())
-    .attr("fill", "var(--theme-foreground-faintest)")
-    .attr("stroke", "var(--theme-foreground)");
+    .attr("x", x1Scale(0))
+    .attr("y", (d) => yScale(d.y))
+    .attr("width", (d) => x1Scale(d.x1))
+    .attr("height", yScale.bandwidth() / 2)
+    .attr("fill", "var(--theme-foreground)");
 
-  bossBars
+  bars
+    .append("rect")
+    .attr("x", x1Scale(0))
+    .attr("y", (d) => yScale(d.y) + yScale.bandwidth() / 2)
+    .attr("width", (d) => x2Scale(d.x2))
+    .attr("height", yScale.bandwidth() / 2)
+    .attr("fill", "var(--theme-foreground-faint)");
+
+  // Add x-axis
+  const xAxisTop = d3.axisTop(x1Scale);
+  fig
+    .append("g")
+    .call(xAxisTop)
+    .attr(
+      "transform",
+      `translate(${yAxisWidth}, ${margins.top + xAxisHeight})`
+    );
+  fig
     .append("text")
-    .attr("x", 2)
-    .attr("y", (d) => yScale(d.ID) + yScale.bandwidth() - 6)
-    .attr("dy", "0.35em")
+    .attr("x", width / 2)
+    .attr("y", margins.top + xAxisHeight - 30)
+    .attr("text-anchor", "middle")
     .attr("fill", "var(--theme-foreground)")
     .style("font", "10px/1.6 var(--sans-serif)")
-    .text((d) => `${d[selectedBossNames[i]]} - ${selectedBossNames[i]}`);
+    .text(x1Var);
+
+  const xAxisBot = d3.axisBottom(x2Scale);
+  fig
+    .append("g")
+    .call(xAxisBot)
+    .attr(
+      "transform",
+      `translate(${yAxisWidth}, ${height - margins.bottom - xAxisHeight})`
+    );
+  fig
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", height - margins.bottom - xAxisHeight + 35)
+    .attr("text-anchor", "middle")
+    .attr("fill", "var(--theme-foreground)")
+    .style("font", "10px/1.6 var(--sans-serif)")
+    .text(x2Var);
+
+  // Add y-axis
+  const yAxis = d3.axisLeft(yScale).tickFormat((d) => d);
+  fig.append("g").call(yAxis).attr("transform", `translate(${yAxisWidth}, 0)`);
+  fig
+    .append("text")
+    .attr("x", -height / 2)
+    .attr("y", margins.left + yAxisWidth - 75)
+    .attr("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .attr("fill", "var(--theme-foreground)")
+    .style("font", "10px/1.6 var(--sans-serif)")
+    .text("Log ID");
+
+  display(svg.node());
 }
-
-// Draw an extra rectangle at the end to fill in the rest
-g.append("rect")
-  .attr("x", (d) => {
-    const previousBarX = selectedBossNames
-      .map((boss) => d[boss])
-      .filter((x) => x)
-      .reduce((a, b) => a + b, 0);
-    return xScale(previousBarX);
-  })
-  .attr("y", (d) => yScale(d.ID))
-  .attr("width", (d) => {
-    return xScale(selectedBossTotalBars) - xScale(0);
-  })
-  .attr("height", yScale.bandwidth())
-  .attr("fill", "var(--theme-background)");
-
-// Add x-axis
-const xAxis = d3.axisTop(xScale).tickFormat((d) => d + 1);
-svg
-  .append("g")
-  .call(xAxis)
-  .attr("transform", `translate(0, ${margins.top + xAxisHeight})`);
-svg
-  .append("text")
-  .attr("x", width / 2)
-  .attr("y", margins.top + xAxisHeight - 30)
-  .attr("text-anchor", "middle")
-  .attr("fill", "var(--theme-foreground)")
-  .style("font", "10px/1.6 var(--sans-serif)")
-  .text("Bars Remaining");
-
-// Add y-axis
-const yAxis = d3.axisLeft(yScale).tickFormat((d) => d);
-svg.append("g").call(yAxis).attr("transform", `translate(${yAxisWidth}, 0)`);
-svg
-  .append("text")
-  .attr("x", -height / 2)
-  .attr("y", margins.left + yAxisWidth - 50)
-  .attr("text-anchor", "middle")
-  .attr("transform", "rotate(-90)")
-  .attr("fill", "var(--theme-foreground)")
-  .style("font", "10px/1.6 var(--sans-serif)")
-  .text("Log ID");
-
-display(svg.node());
 ```
