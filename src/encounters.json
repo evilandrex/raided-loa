@@ -135,6 +135,20 @@
     ],
     "difficulties": ["Normal", "Hard"]
   },
+  "Behemoth G1": {
+    "names": [
+      "Behemoth, the Storm Commander",
+      "Despicable Skolakia",
+      "Untrue Crimson Yoho",
+      "Ruthless Lakadroff",
+      "Vicious Argeos"
+    ],
+    "difficulties": ["Normal"]
+  },
+  "Behemoth G2": {
+    "names": ["Behemoth, the Whirling Wings of Chaos"],
+    "difficulties": ["Normal"]
+  },
   "Deskaluda": {
     "names": ["Deskaluda"],
     "difficulties": [""]
