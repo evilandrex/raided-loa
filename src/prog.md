@@ -962,7 +962,12 @@ if (!!selectedEncounter) {
     .attr("fill", "var(--theme-foreground-faint)");
 
   // Add x-axis
-  const xAxisTop = d3.axisTop(x1Scale);
+  let xAxisTop = d3.axisTop(x1Scale);
+  if (x1Var == "DPS (Total)") {
+    xAxisTop = xAxisTop.tickFormat((d) => formatMillions(d));
+  } else if (x1Var == "Duration") {
+    xAxisTop = xAxisTop.tickFormat((d) => formatDuration(d));
+  }
   fig
     .append("g")
     .call(xAxisTop)
@@ -980,6 +985,11 @@ if (!!selectedEncounter) {
     .text(x1Var);
 
   const xAxisBot = d3.axisBottom(x2Scale);
+  if (x2Var == "DPS (Total)") {
+    xAxisBot = xAxisBot.tickFormat((d) => formatMillions(d));
+  } else if (x2Var == "Duration") {
+    xAxisBot = xAxisBot.tickFormat((d) => formatDuration(d));
+  }
   fig
     .append("g")
     .call(xAxisBot)
