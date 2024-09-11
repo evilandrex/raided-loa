@@ -779,19 +779,20 @@ const x1Select = Inputs.select(
   ["DPS (Total)", "Sup. Perf. ", "Bars Complete", "Duration"],
   {
     label: "Top X Data",
-    value: "DPS (Total)",
+    value: "Bars Complete",
   }
 );
 const x2Select = Inputs.select(
   ["DPS (Total)", "Sup. Perf. ", "Bars Complete", "Duration"],
   {
     label: "Bottom X Data",
-    value: "Bars Complete",
+    value: "DPS (Total)",
   }
 );
 
 const aggStatSelect = Inputs.select(["Average", "Max"], {
   label: "Aggregate Stat",
+  value: "Max",
 });
 const aggWindowSelect = Inputs.select(["Batched", "Rolling Window"], {
   label: "Aggregate Method",
