@@ -779,14 +779,14 @@ const x1Select = Inputs.select(
   ["Bars Complete", "DPS (Total)", "Sup. Perf.", "Duration"],
   {
     label: "Top X Data",
-    value: "Bars Complete",
+    value: "DPS (Total)",
   }
 );
 const x2Select = Inputs.select(
   ["Bars Complete", "DPS (Total)", "Sup. Perf.", "Duration"],
   {
     label: "Bottom X Data",
-    value: "DPS (Total)",
+    value: "Bars Complete",
   }
 );
 
