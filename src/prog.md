@@ -550,7 +550,7 @@ if (!!selectedEncounter) {
       Duration: enc.duration,
       "DPS (Total)": enc.avgTeamDps,
       "DPS Taken (Total)": enc.avgTeamDPSTaken,
-      "Sup. Perf. ": `${Math.round(enc.avgAPUptime * 100)}/${Math.round(
+      "Sup. Perf.": `${Math.round(enc.avgAPUptime * 100)}/${Math.round(
         enc.avgBrandUptime * 100
       )}/${Math.round(enc.avgIdentityUptime * 100)}`,
       Deaths: enc.playerInfo
@@ -776,21 +776,21 @@ if (!!selectedEncounter) {
 
 ```js
 const x1Select = Inputs.select(
-  ["DPS (Total)", "Sup. Perf. ", "Bars Complete", "Duration"],
+  ["Bars Complete", "DPS (Total)", "Sup. Perf.", "Duration"],
   {
     label: "Top X Data",
     value: "Bars Complete",
   }
 );
 const x2Select = Inputs.select(
-  ["DPS (Total)", "Sup. Perf. ", "Bars Complete", "Duration"],
+  ["Bars Complete", "DPS (Total)", "Sup. Perf.", "Duration"],
   {
     label: "Bottom X Data",
     value: "DPS (Total)",
   }
 );
 
-const aggStatSelect = Inputs.select(["Average", "Max"], {
+const aggStatSelect = Inputs.select(["Max", "Average"], {
   label: "Aggregate Stat",
   value: "Max",
 });
@@ -830,10 +830,10 @@ if (!!selectedEncounter) {
   function aggData(logs, column, stat) {
     if (stat == "Average") {
       const nLogs = logs.length;
-      return column == "Sup. Perf. "
+      return column == "Sup. Perf."
         ? logs
             .map((d) =>
-              d["Sup. Perf. "]
+              d["Sup. Perf."]
                 .split("/")
                 .map((d) => Number(d))
                 .reduce((a, b) => a + b, 0)
@@ -841,10 +841,10 @@ if (!!selectedEncounter) {
             .reduce((a, b) => a + b, 0) / nLogs
         : logs.map((d) => d[column]).reduce((a, b) => a + b, 0) / nLogs;
     } else if (stat == "Max") {
-      return column == "Sup. Perf. "
+      return column == "Sup. Perf."
         ? Math.max(
             ...logs.map((d) =>
-              d["Sup. Perf. "]
+              d["Sup. Perf."]
                 .split("/")
                 .map((d) => Number(d))
                 .reduce((a, b) => a + b, 0)
@@ -908,9 +908,9 @@ if (!!selectedEncounter) {
 ```js figure
 if (!!selectedEncounter) {
   const x1Max =
-    x1Var == "Sup. Perf. " ? 300 : Math.max(...figureData.map((d) => d.x1));
+    x1Var == "Sup. Perf." ? 300 : Math.max(...figureData.map((d) => d.x1));
   const x2Max =
-    x2Var == "Sup. Perf. " ? 300 : Math.max(...figureData.map((d) => d.x2));
+    x2Var == "Sup. Perf." ? 300 : Math.max(...figureData.map((d) => d.x2));
 
   // Create x-scale based x1/x2
   const x1Scale = d3
@@ -973,7 +973,7 @@ if (!!selectedEncounter) {
   fig
     .append("text")
     .attr("x", width / 2)
-    .attr("y", margins.top + xAxisHeight - 30)
+    .attr("y", margins.top + xAxisHeight - 25)
     .attr("text-anchor", "middle")
     .attr("fill", "var(--theme-foreground)")
     .style("font", "10px/1.6 var(--sans-serif)")
