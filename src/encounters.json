@@ -149,6 +149,14 @@
     "names": ["Behemoth, Cruel Storm Slayer"],
     "difficulties": ["Normal"]
   },
+  "Aegir G1": {
+    "names": ["Akkan, Lord of Death", "Abyss Monarch Aegir"],
+    "difficulties": ["Normal", "Hard"]
+  },
+  "Aegir G2": {
+    "names": ["Aegir, the Oppressor", "Pulsating Giant's Heart"],
+    "difficulties": ["Normal", "Hard"]
+  },
   "Deskaluda": {
     "names": ["Deskaluda"],
     "difficulties": [""]
