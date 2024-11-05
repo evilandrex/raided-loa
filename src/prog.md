@@ -201,7 +201,7 @@ if (!!selectedEncounter) {
   let filterQuery = `
     SELECT id FROM encounter_preview
       WHERE current_boss IN (${selectedBoss
-        .map((name) => `'${name}'`)
+        .map((name) => `"${name}"`)
         .join(", ")})
       AND difficulty IN (${selectedDiff.map((diff) => `'${diff}'`).join(", ")}) 
       AND fight_start BETWEEN '${dateStart.getTime()}' AND '${dateEnd.getTime()}'
