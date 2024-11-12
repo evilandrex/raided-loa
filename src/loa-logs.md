@@ -38,6 +38,7 @@ Give your thanks to Snow for providing this data!
         ${durationMaxRange}
         <br/>
         ${filterArkToggle}
+        ${unknownSpecToggle}
         ${filterDeadToggle}
         ${filterWeirdToggle}
         <sub>Princcess GL, weird support count, weird player count</sub>
@@ -237,6 +238,16 @@ const filterArkToggle = Inputs.toggle({
 const filterArk = Generators.input(filterArkToggle);
 ```
 
+```js unknown spec toggle
+const unknownSpecToggle = Inputs.toggle({
+  label: "Include unknown specs",
+  value: urlParams.get("hasSpec")
+    ? !urlParams.get("hasSpec") === "false"
+    : true,
+});
+const unknownSpec = Generators.input(unknownSpecToggle);
+```
+
 ```js weird toggle
 const filterWeirdToggle = Inputs.toggle({
   label: "Filter Weird",
@@ -378,10 +389,10 @@ if (selectedBoss != null) {
     .filter(
       aq.escape((d) => d.timestamp >= dateStart && d.timestamp <= dateEndExtra)
     )
-    .filter(aq.escape((d) => d.hasSpec))
+    .filter(aq.escape((d) => (unknownSpec ? true : d.hasSpec === true)))
     .filter(aq.escape((d) => (filterWeird ? d.weird === false : true)))
     .filter(aq.escape((d) => (filterDead ? d.isDead === false : true)))
-    .filter(aq.escape((d) => (filterArk ? d.arkPassiveActive === true : true)))
+    .filter(aq.escape((d) => (filterArk ? d.arkPassiveActive === false : true)))
     .filter(
       aq.escape((d) => d.gearscore >= iLevelMin && d.gearscore <= iLevelMax)
     )
@@ -393,6 +404,7 @@ if (selectedBoss != null) {
     )
     .filter(aq.escape((d) => !aq.op.includes(supportClasses, d.spec)))
     .reify();
+  console.log(data);
 }
 ```
 
