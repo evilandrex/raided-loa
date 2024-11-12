@@ -1,16 +1,11 @@
 ---
-title: Raided Lost Ark
+title: Raided Lost Ark - Faust Archive
 toc: false
 ---
 
 <h1>Raided Lost Ark</h1>
 
-<div class="warning">First pass data collection is ongoing. Data collection 
-is going backwards starting from Aegir (Aegir should be up to date). If 
-little/no data is available for a given encounter, it is likely because the data 
-has not been collected yet. This dataset will focus on Ark Passive T4 content. 
-Give your thanks to Snow for providing this data!
-</div>
+<div class="caution">Data from the old logging site that Faust maintained, data no longer updated.</div>
 
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card">
@@ -37,7 +32,6 @@ Give your thanks to Snow for providing this data!
         ${durationMinRange}
         ${durationMaxRange}
         <br/>
-        ${filterArkToggle}
         ${filterDeadToggle}
         ${filterWeirdToggle}
         <sub>Princcess GL, weird support count, weird player count</sub>
@@ -63,13 +57,15 @@ const urlParams = new URLSearchParams(window.location.search);
 ```
 
 ```js boss selector
-const guardians = ["Veskal", "Argeos"];
+const guardians = ["Sonavel", "Gargadeth", "Veskal"];
 
 const raids = {
+  Brelshaza: [1, 2, 3, 4],
+  Kayangel: [1, 2, 3],
+  Akkan: [1, 2, 3],
+  Ivory: [1, 2, 3, 4],
   Thaemine: [1, 2, 3, 4],
   Echidna: [1, 2],
-  Behemoth: [1, 2],
-  Aegir: [1, 2],
 };
 let bosses = [null, ...guardians, ...Object.keys(raids)];
 
@@ -83,13 +79,19 @@ const selectedBoss = Generators.input(bossSelect);
 ```js difficulty radio
 const reqDiff =
   guardians.includes(selectedBoss) ||
-  selectedBoss == "Behemoth" ||
+  selectedBoss == "Kakul Saydon" ||
+  selectedBoss == "Brelshaza" ||
+  selectedBoss == "Kayangel" ||
   selectedBoss === null;
 
 const diffValue = urlParams.get("difficulty")
   ? urlParams.get("difficulty")
-  : selectedBoss == "Behemoth"
+  : selectedBoss == "Kakul Saydon"
   ? "Normal"
+  : selectedBoss == "Brelshaza"
+  ? "Hard"
+  : selectedBoss == "Kayangel"
+  ? "Hard"
   : reqDiff
   ? null
   : "Normal";
@@ -141,16 +143,29 @@ const selectedSort = Generators.input(sortSelect);
 
 ```js patch selector
 const patches = new Map([
-  ["October 2024 - T4 Release", [new Date(`2024-10-9`), Date.now()]],
   [
-    "June 2024 - Echidna Balance",
-    [new Date(`2024-06-19`), new Date(`2024-10-8`)],
-  ],
-  [
-    "April 2024 - Thaemine Release",
+    "April 2024 - Mage Balance",
     [new Date(`2024-04-17`), new Date(`2024-06-18`)],
   ],
-  ["All Patches", [new Date(`2024-04-17`), Date.now()]],
+  ["June 2024 - Minor Balance (Current)", [new Date(`2024-06-19`), Date.now()]],
+  ["March 2024 - Breaker", [new Date(`2024-03-20`), new Date(`2024-04-16`)]],
+  [
+    "January 2024 - Major Balance",
+    [new Date(`2023-11-14`), new Date(`2024-03-19`)],
+  ],
+  [
+    "November 2023 - Souleater",
+    [new Date(`2023-09-13`), new Date(`2023-11-13`)],
+  ],
+  [
+    "September 2023 - Minor Balance",
+    [new Date(`2023-08-16`), new Date(`2023-09-12`)],
+  ],
+  [
+    "August 2023 - Aeromancer",
+    [new Date(`2022-02-11`), new Date(`2023-08-15`)],
+  ],
+  ["All Patches", [new Date(`2022-02-11`), Date.now()]],
 ]);
 
 const patchSelect = Inputs.select(patches, {
@@ -179,20 +194,23 @@ const dateEnd = Generators.input(dateEndSelect);
 
 ```js ilevel ranges
 const bossIlevelDefaults = {
-  Veskal: [1610, 1639],
-  Argeos: [1640, 1750],
-  Thaemine: { Normal: [1610, 1619], Hard: [1620, 1659] },
-  Echidna: { Normal: [1620, 1629], Hard: [1630, 1750] },
-  Behemoth: { Normal: [1620, 1750] },
-  Aegir: { Normal: [1660, 1679], Hard: [1680, 1750] },
+  Sonavel: [1580, 1609],
+  Gargadeth: [1610, 1629],
+  Veskal: [1630, 1675],
+  Brelshaza: { Hard: [1580, 1609] },
+  Kayangel: { Hard: [1580, 1599] },
+  Akkan: { Normal: [1580, 1599], Hard: [1600, 1619] },
+  Ivory: { Normal: [1600, 1619], Hard: [1620, 1675] },
+  Thaemine: { Normal: [1610, 1629], Hard: [1630, 1675] },
+  Echidna: { Normal: [1620, 1629], Hard: [1630, 1675] },
 };
 
 const iLevelDefaults = bossIlevelDefaults[selectedBoss]
   ? bossIlevelDefaults[selectedBoss][difficulty]
     ? bossIlevelDefaults[selectedBoss][difficulty]
     : bossIlevelDefaults[selectedBoss]
-  : [1580, 1750];
-const iLevelMinRange = Inputs.range([1580, 1750], {
+  : [1580, 1675];
+const iLevelMinRange = Inputs.range([1580, 1675], {
   value: urlParams.get("iLevelMin")
     ? Number(urlParams.get("iLevelMin"))
     : iLevelDefaults[0],
@@ -200,7 +218,7 @@ const iLevelMinRange = Inputs.range([1580, 1750], {
 });
 const iLevelMin = Generators.input(iLevelMinRange);
 
-const iLevelMaxRange = Inputs.range([1580, 1750], {
+const iLevelMaxRange = Inputs.range([1580, 1675], {
   value: urlParams.get("iLevelMax")
     ? Number(urlParams.get("iLevelMax"))
     : iLevelDefaults[1],
@@ -225,16 +243,6 @@ const durationMaxRange = Inputs.range([0, 3600], {
   step: 1,
 });
 const durationMax = Generators.input(durationMaxRange);
-```
-
-```js ark passive toggle
-const filterArkToggle = Inputs.toggle({
-  label: "Only Ark Passives",
-  value: urlParams.get("filterArk")
-    ? !urlParams.get("filterArk") === "false"
-    : true,
-});
-const filterArk = Generators.input(filterArkToggle);
 ```
 
 ```js weird toggle
@@ -268,7 +276,7 @@ const showStars = Generators.input(starToggle);
 ```
 
 ```js query string maker
-let queryUrl = "https://raided.pro/loa-logs?";
+let queryUrl = "https://raided.pro/loa-logs-archive?";
 
 // If a boss is selected
 if (selectedBoss) {
@@ -345,7 +353,7 @@ const supportClasses = [
   "Princess Maker",
 ];
 let url =
-  "https://raw.githubusercontent.com/evilandrex/raided-loa-scraper/main/data/";
+  "https://raw.githubusercontent.com/evilandrex/raided-loa-scraper/main/data_faust/";
 
 // Check if boss is a guardian
 if (selectedBoss == null) {
@@ -359,12 +367,9 @@ if (selectedBoss == null) {
 // Load data from github
 let data = await aq.loadCSV(url, {
   parse: {
-    timestamp: (d) => aq.op.parse_date(Number(d)),
-    isDead: (d) => d === "True",
+    date: (d) => aq.op.parse_date(Number(d)),
+    dead: (d) => d === "True",
     weird: (d) => d === "True",
-    arkPassiveActive: (d) => d === "True",
-    localPlayer: (d) => d === "True",
-    hasSpec: (d) => d === "True",
   },
 });
 
@@ -375,15 +380,11 @@ if (selectedBoss != null) {
 
   // Filter based on inputs
   data = data
-    .filter(
-      aq.escape((d) => d.timestamp >= dateStart && d.timestamp <= dateEndExtra)
-    )
-    .filter(aq.escape((d) => d.hasSpec))
+    .filter(aq.escape((d) => d.date >= dateStart && d.date <= dateEndExtra))
     .filter(aq.escape((d) => (filterWeird ? d.weird === false : true)))
-    .filter(aq.escape((d) => (filterDead ? d.isDead === false : true)))
-    .filter(aq.escape((d) => (filterArk ? d.arkPassiveActive === true : true)))
+    .filter(aq.escape((d) => (filterDead ? d.dead === false : true)))
     .filter(
-      aq.escape((d) => d.gearscore >= iLevelMin && d.gearscore <= iLevelMax)
+      aq.escape((d) => d.gearScore >= iLevelMin && d.gearScore <= iLevelMax)
     )
     .filter(
       aq.escape(
@@ -391,7 +392,7 @@ if (selectedBoss != null) {
           d.duration >= durationMin * 1000 && d.duration <= durationMax * 1000
       )
     )
-    .filter(aq.escape((d) => !aq.op.includes(supportClasses, d.spec)))
+    .filter(aq.escape((d) => !aq.op.includes(supportClasses, d.class)))
     .reify();
 }
 ```
@@ -407,8 +408,8 @@ if (selectedBoss) {
     .array("ids")[0].length;
 
   latestLog = data
-    .select("timestamp")
-    .rollup({ latest: aq.op.max("timestamp") })
+    .select("date")
+    .rollup({ latest: aq.op.max("date") })
     .array("latest")[0]
     .toLocaleDateString();
 }
@@ -426,12 +427,12 @@ const height = plotHeight + margins.top + margins.bottom + xAxisHeight;
 
 ```js class colors
 const classSpecs = [
-  ["Mayhem", "Berserker Technique"],
+  ["Mayhem", "Berserker's Technique"],
   ["Rage Hammer", "Gravity Training"],
   ["Combat Readiness", "Lone Knight"],
-  ["Blessed Aura", "Judgement", "Judgment"],
+  ["Blessed Aura", "Judgment"],
   ["Predator", "Punisher"],
-  ["Order of the Emperor", "Grace of the Empress"],
+  ["Order of the Emperor", "Empress's Grace"],
   ["Master Summoner", "Communication Overflow"],
   ["Desperate Salvation", "True Courage"],
   ["Igniter", "Reflux"],
@@ -734,26 +735,18 @@ g.append("path")
     d3.select(event.target).attr("opacity", "1");
 
     // Find the link to the best log
-    let bestLink = "https://logs.snow.xyz/logs/";
+    let bestLink = "https://logs.fau.dev/log/";
     bestLink += data
       .filter(
         aq.escape(
-          (log) => log.dps === d.Max && log.spec === d.Build.split(" (")[0]
+          (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
         )
       )
       .array("id")[0];
-    let bestGearscore = data
-      .filter(
-        aq.escape(
-          (log) => log.dps === d.Max && log.spec === d.Build.split(" (")[0]
-        )
-      )
-      .array("gearscore")[0];
 
     tooltip.style("opacity", 1).html(`
       <div class="card" style="padding: 7px;">
         <div>${d.Build.split(" (")[0]}</div>
-        <div>Item Level: ${d3.format("4.0d")(bestGearscore)}</div>
         <div>${d3.format(".3s")(d.Max)} DPS</div>
         <div>${bestLink}</div>
       </div>
@@ -777,7 +770,7 @@ g.append("path")
   })
   .on("click", (event, d) => {
     window.open(
-      `https://logs.snow.xyz/logs/${
+      `https://logs.fau.dev/log/${
         data
           .filter(
             aq.escape(
@@ -862,7 +855,7 @@ if (selectedBoss) {
 
 ```js class data table
 const classData = data
-  .groupby("spec")
+  .groupby("class")
   .rollup({
     Logs: aq.op.count(),
     Q1: aq.op.quantile("dps", 0.25),
@@ -884,9 +877,9 @@ const classData = data
     Upper: (d) => Math.min(d.Max, d.Upper),
   })
   .derive({
-    spec: (d) => d.spec + ` (${d.Logs})`,
+    class: (d) => d.class + ` (${d.Logs})`,
   })
-  .rename({ spec: "Build" })
+  .rename({ class: "Build" })
   .orderby(aq.desc(selectedSort))
   .reify();
 
@@ -922,7 +915,7 @@ const allSpecs = classSpecs
   .filter((d) => !supportClasses.includes(d));
 
 // For each spec, find the top 5 logs
-const logLinkStub = "https://logs.snow.xyz/logs/";
+const logLinkStub = "https://logs.fau.dev/log/";
 const topLogs = {
   spec: allSpecs,
   log1: [],
@@ -933,11 +926,11 @@ const topLogs = {
 };
 for (const spec of allSpecs) {
   const specIDs = data
-    .filter(aq.escape((d) => d.spec === spec))
+    .filter(aq.escape((d) => d.class === spec))
     .orderby(aq.desc("dps"))
     .array("id");
   const bestDPS = data
-    .filter(aq.escape((d) => d.spec === spec))
+    .filter(aq.escape((d) => d.class === spec))
     .orderby(aq.desc("dps"))
     .array("dps");
 

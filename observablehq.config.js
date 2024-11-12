@@ -10,7 +10,8 @@ export default {
     { name: "Logs", path: "/loa-logs" },
     //{name: "Analysis", path: "/loa-analysis"},
     { name: "Progression", path: "/prog" },
-    { name: "Future", path: "/future" }
+    { name: "Future", path: "/future" },
+    { name: "Logs Archive", path: "/loa-logs-archive" }
   ],
 
   // Content to add to the head of the page, e.g. for a favicon:
