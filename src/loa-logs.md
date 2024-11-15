@@ -392,7 +392,7 @@ if (selectedBoss != null) {
     .filter(aq.escape((d) => (unknownSpec ? true : d.hasSpec === true)))
     .filter(aq.escape((d) => (filterWeird ? d.weird === false : true)))
     .filter(aq.escape((d) => (filterDead ? d.isDead === false : true)))
-    .filter(aq.escape((d) => (filterArk ? d.arkPassiveActive === false : true)))
+    .filter(aq.escape((d) => (filterArk ? d.arkPassiveActive === true : false)))
     .filter(
       aq.escape((d) => d.gearscore >= iLevelMin && d.gearscore <= iLevelMax)
     )
@@ -404,7 +404,6 @@ if (selectedBoss != null) {
     )
     .filter(aq.escape((d) => !aq.op.includes(supportClasses, d.spec)))
     .reify();
-  console.log(data);
 }
 ```
 
