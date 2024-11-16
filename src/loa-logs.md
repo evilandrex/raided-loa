@@ -64,10 +64,9 @@ const urlParams = new URLSearchParams(window.location.search);
 ```
 
 ```js boss selector
-const guardians = ["Veskal", "Argeos"];
+const guardians = ["Argeos"];
 
 const raids = {
-  Thaemine: [1, 2, 3, 4],
   Echidna: [1, 2],
   Behemoth: [1, 2],
   Aegir: [1, 2],
@@ -89,6 +88,8 @@ const reqDiff =
 
 const diffValue = urlParams.get("difficulty")
   ? urlParams.get("difficulty")
+  : selectedBoss == "Thaemine"
+  ? "Hard"
   : selectedBoss == "Behemoth"
   ? "Normal"
   : reqDiff
@@ -143,15 +144,6 @@ const selectedSort = Generators.input(sortSelect);
 ```js patch selector
 const patches = new Map([
   ["October 2024 - T4 Release", [new Date(`2024-10-9`), Date.now()]],
-  [
-    "June 2024 - Echidna Balance",
-    [new Date(`2024-06-19`), new Date(`2024-10-8`)],
-  ],
-  [
-    "April 2024 - Thaemine Release",
-    [new Date(`2024-04-17`), new Date(`2024-06-18`)],
-  ],
-  ["All Patches", [new Date(`2024-04-17`), Date.now()]],
 ]);
 
 const patchSelect = Inputs.select(patches, {
@@ -180,10 +172,8 @@ const dateEnd = Generators.input(dateEndSelect);
 
 ```js ilevel ranges
 const bossIlevelDefaults = {
-  Veskal: [1610, 1639],
   Argeos: [1640, 1750],
-  Thaemine: { Normal: [1610, 1619], Hard: [1620, 1659] },
-  Echidna: { Normal: [1620, 1629], Hard: [1630, 1750] },
+  Echidna: { Hard: [1630, 1750] },
   Behemoth: { Normal: [1620, 1750] },
   Aegir: { Normal: [1660, 1679], Hard: [1680, 1750] },
 };
