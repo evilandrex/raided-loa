@@ -204,7 +204,7 @@ const iLevelMax = Generators.input(iLevelMaxRange);
 const durationMinRange = Inputs.range([0, 3600], {
   value: urlParams.get("durationMin")
     ? Number(urlParams.get("durationMin"))
-    : 120,
+    : 60,
   step: 1,
 });
 const durationMin = Generators.input(durationMinRange);
@@ -324,7 +324,7 @@ if (!filterDead) {
 }
 
 // Add duration range if not default
-if (durationMin !== 120) {
+if (durationMin !== 60) {
   queryUrl += `&durationMin=${durationMin}`;
 }
 
