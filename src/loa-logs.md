@@ -505,6 +505,8 @@ const svg = d3
   .attr("height", height)
   .style("background", "transparent");
 
+if (selectedBoss) {
+
 const g = svg.append("g").selectAll("g").data(classData.toArray()).join("g");
 
 // Add main box
@@ -823,7 +825,6 @@ svg
     d3.select(event.target).text("Share: Copied!");
   });
 
-if (selectedBoss) {
   display(svg.node());
 }
 ```
