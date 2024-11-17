@@ -343,7 +343,7 @@ const supportClasses = [
   "Blessed Aura",
   "Full Bloom",
   "Desperate Salvation",
-  "Princess Maker",
+  "Princess",
 ];
 let url =
   "https://raw.githubusercontent.com/evilandrex/raided-loa-scraper/dev/data/";
@@ -376,14 +376,12 @@ if (selectedBoss != null) {
 
   filter = `WHERE timestamp >= ${startTimestamp} and timestamp <= ${endTimestamp} AND
     ${unknownSpec ? "" : "hasSpec = true AND"} 
-    ${filterWeird ? "" : "weird = false AND"}
+    ${filterWeird ? "" : "weird = true AND"}
     ${filterDead ? "" : "isDead = false AND"}
     ${filterArk ? "arkPassiveActive = true AND" : ""}
     gearscore >= ${iLevelMin} AND gearscore <= ${iLevelMax} AND
     duration >= ${durationMin * 1000} AND duration <= ${durationMax * 1000} AND
     spec NOT IN (${supportClasses.map((d) => `'${d}'`).join(", ")})`;
-
-  data = await db.query(`SELECT * FROM logs ${filter}`);
 }
 ```
 
@@ -485,19 +483,18 @@ const classColors = new Map(
 ```
 
 ```js boxplot
-console.log(classData.toArray());
 // Create x-scale (based on dps)
 const maxCol = showStars ? "Max" : "Upper";
 const xLeft = width > minWidth ? yAxisWidth + margins.left : margins.left;
 const xScale = d3
   .scaleLinear()
-  .domain([0, d3.max(selectedClasses.map((d) => d[maxCol]))])
+  .domain([0, d3.max(classData.toArray().map((d) => d[maxCol]))])
   .range([xLeft, width - margins.right]);
 
 // Create y-scale (categorical for each class)
 const yScale = d3
   .scaleBand()
-  .domain(selectedClasses.map((d) => d.BuildAndCount))
+  .domain(classData.toArray().map((d) => d.BuildAndCount))
   .range([margins.top, height - margins.bottom - xAxisHeight])
   .padding(0.2);
 
@@ -508,7 +505,7 @@ const svg = d3
   .attr("height", height)
   .style("background", "transparent");
 
-const g = svg.append("g").selectAll("g").data(selectedClasses).join("g");
+const g = svg.append("g").selectAll("g").data(classData.toArray()).join("g");
 
 // Add main box
 g.append("rect")
@@ -669,9 +666,12 @@ g.append("rect")
   .on("mouseover", (event, d) => {
     tooltip.style("opacity", 1).html(`
       <div class="card" style="padding: 7px;">
-        <div>Rank ${selectedClasses.indexOf(d) + 1}/${
-      selectedClasses.length
-    }</div>
+        <div>Rank ${
+          classData
+            .toArray()
+            .map((x) => x.spec)
+            .indexOf(d.spec) + 1
+        }/${classData.toArray().length}</div>
         <div>${d.spec}</div>
         <div>${d.Logs} logs</div>
         <br/>
@@ -731,14 +731,6 @@ g.append("path")
     // Find the link to the best log
     let bestLink = "https://logs.snow.xyz/logs/";
     bestLink += d.BestLog;
-    // let bestGearscore = data
-    //   .filter(
-    //     aq.escape(
-    //       (log) => log.dps === d.Max && log.spec === d.Build.split(" (")[0]
-    //     )
-    //   )
-    //   .array("gearscore")[0];
-
     tooltip.style("opacity", 1).html(`
       <div class="card" style="padding: 7px;">
         <div>${d.spec}</div>
@@ -888,6 +880,8 @@ const classTable = Inputs.table(classData, {
     Upper: d3.format(".3s"),
   },
   layout: "auto",
+  sort: "spec",
+  select: false,
 });
 
 const selectedClasses = Generators.input(classTable);
@@ -950,6 +944,7 @@ if (selectedBoss) {
       },
       sort: "spec",
       layout: "auto",
+      select: false,
     })
   );
 }
