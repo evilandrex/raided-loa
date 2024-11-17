@@ -13,6 +13,7 @@ toc: false
       ${dateEndSelect ? dateEndSelect : ""}
       ${minDurationRange ? minDurationRange : ""}
       ${maxDurationRange ? maxDurationRange : ""}
+      ${percentileWindowRange ? percentileWindowRange : ""}
       ${nameTextArea ? nameTextArea : ""}
       ${clearedToggle ? clearedToggle : ""}
     </div>
@@ -22,6 +23,13 @@ toc: false
         You can also get to this folder from your settings of LOA Logs in the 
         database page. WARNING: if your database is very large, this will take
         a lot of RAM and extremely large databases may simply not work, sorry!
+        </br>
+        </br>
+        Percentiles are calculated using the available global data for a given 
+        encounter. Specifically, we filter by spec, gear score (you can change 
+        the window), and whether the player had their ark passive active. The
+        value in the parantheses is the number of logs used to calculate the
+        percentile.
     </div>
 </div>
 
@@ -40,7 +48,15 @@ const encounters = Object.keys(encounterDict)
   );
 const hpBarMap = await FileAttachment("bossHPBars.json").json();
 
-const supportClasses = ["Bard", "Paladin", "Artist"];
+const supportClasses = [
+  "Bard",
+  "Paladin",
+  "Artist",
+  "Full Bloom",
+  "Desperate Salvation",
+  "Blessed Aura",
+  "Princess",
+];
 
 function formatPercent(x) {
   return Math.round(x * 1000) / 10 + "%";
@@ -149,6 +165,19 @@ if (!!db) {
 }
 ```
 
+```js percentile window filter
+let percentileWindow, percentileWindowRange;
+if (!!db) {
+  percentileWindowRange = Inputs.range([1, 200], {
+    label: "Percentile iLevel +- range",
+    step: 1,
+    value: 5,
+  });
+
+  percentileWindow = Generators.input(percentileWindowRange);
+}
+```
+
 ```js name filters
 let nameTextArea, nameFilter;
 if (!!db) {
@@ -186,9 +215,6 @@ if (!!selectedEncounter) {
 
 ```js filtered encounters
 let filteredIDs;
-// console.log(selectedEncounter);
-// console.log(dateStart);
-// console.log(dateEnd);
 if (!!selectedEncounter) {
   const selectedBoss = encounterDict[selectedEncounter.split(" - ")[0]].names;
   let selectedDiff = selectedEncounter.split(" - ")[1];
@@ -209,12 +235,8 @@ if (!!selectedEncounter) {
       ${filterCleared ? "AND cleared = 1" : ""}
   `;
 
-  // console.log(filterQuery);
   filteredIDs = await db.query(filterQuery);
-  // console.log(filteredIDs);
 }
-// console.log(selectedEncounter);
-// display(Inputs.table(filteredIDs, { select: false }));
 ```
 
 ```js get encounter info
@@ -224,7 +246,6 @@ async function get_encounter_info(encID) {
       WHERE id = ${encID}
   `);
   const encounterInfo = JSON.parse(encounter[0]["misc"]);
-  // console.log(encounter[0]);
   const playerEntities = await db.query(`
     SELECT * FROM entity
       WHERE encounter_id = ${encID}
@@ -278,7 +299,6 @@ async function get_encounter_info(encID) {
   if (partyInfo) {
     partyNumbers = Object.keys(partyInfo);
   }
-  // console.log(partyInfo);
 
   const playerInfo = [];
   for (let i = 0; i < playerEntities.length; i++) {
@@ -304,7 +324,7 @@ async function get_encounter_info(encID) {
       : 0;
     playerInfo.push({
       name: entity["name"],
-      class: entity["class"],
+      class: entity["spec"] ? entity["spec"] : entity["class"],
       isSupport: supportClasses.includes(entity["class"]),
       party: party,
       dps: damageInfo["dps"],
@@ -321,6 +341,9 @@ async function get_encounter_info(encID) {
       deaths: realDeath ? damageInfo["deaths"] : damageInfo["deaths"] - 1,
       deathTime: realDeath ? damageInfo["deathTime"] : 0,
       cleared: encounterPreview[0]["cleared"],
+      spec: entity["spec"] ? entity["spec"] : "",
+      gearscore: entity["gear_score"],
+      arkPassive: entity["ark_passive_active"] == 1,
     });
   }
 
@@ -413,6 +436,27 @@ if (!!selectedEncounter) {
 // display(encounterInfos);
 ```
 
+```js
+let url =
+  "https://raw.githubusercontent.com/evilandrex/raided-loa-scraper/main/data/" +
+  selectedEncounter.replace(" - ", "_").replace(" ", "_") +
+  ".parquet";
+const logDB = await DuckDBClient.of();
+let haveDB = false;
+try {
+  await logDB.sql`CREATE TABLE logs
+  AS SELECT *
+  FROM read_parquet(${url})`;
+
+  const log_count = await logDB.query("SELECT id FROM logs");
+  if (log_count.numRows > 0) {
+    haveDB = true;
+  }
+} catch (error) {
+  haveDB = false;
+}
+```
+
 **${selectedEncounter ? selectedEncounter : ""}**
 
 ```js boss info / encounter summaries
@@ -466,8 +510,6 @@ if (!!selectedEncounter) {
     tableEncounters.map((enc) => enc.barsComplete).reduce((a, b) => a + b, 0) /
       tableEncounters.length
   );
-
-  // display(bestEncounter);
 }
 ```
 
@@ -614,46 +656,75 @@ if (!!selectedEncounter) {
     .flat()
     .filter((name, i, arr) => arr.indexOf(name) === i);
 
-  const dpsTable = dpsNames.map((name) => {
-    const playerInfo = tableEncounters
-      .map((enc) => enc.playerInfo.filter((player) => player.name === name))
-      .flat();
+  const dpsTable = await Promise.all(
+    dpsNames.map(async (name) => {
+      const playerInfo = tableEncounters
+        .map((enc) => enc.playerInfo.filter((player) => player.name === name))
+        .flat();
 
-    const row = {
-      Name: name,
-      Class: playerInfo[0].class,
-      Pulls: playerInfo.length,
-      "Last Party": playerInfo[playerInfo.length - 1].party,
-      "DPS (Avg)":
+      const playerDPS =
         playerInfo.map((player) => player.dps).reduce((a, b) => a + b, 0) /
-        playerInfo.length,
-      "Crit Rate":
-        playerInfo
-          .map((player) => player.critPercent)
-          .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "FA Rate":
-        playerInfo
-          .map((player) => player.frontPercent)
-          .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "BA Rate":
-        playerInfo
-          .map((player) => player.backPercent)
-          .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "Dmg Taken (Avg)":
-        playerInfo
-          .map((player) => player.damageTaken)
-          .reduce((a, b) => a + b, 0) / playerInfo.length,
-      "Deaths / Pull":
-        playerInfo.map((player) => player.deaths).reduce((a, b) => a + b, 0) /
-        playerInfo.length,
-      "Deaths (Total)": playerInfo
-        .map((player) => player.deaths)
-        .reduce((a, b) => a + b, 0),
-      Clears: playerInfo.filter((player) => player.cleared == 1).length,
-    };
+        playerInfo.length;
 
-    return row;
-  });
+      let percentile;
+      if (haveDB && playerInfo[playerInfo.length - 1].spec) {
+        // Calculate gear score
+        let gearScore =
+          playerInfo
+            .map((player) => player.gearscore)
+            .reduce((a, b) => a + b, 0) / playerInfo.length;
+
+        const minGearscore = gearScore - percentileWindow;
+        const maxGearscore = gearScore + percentileWindow;
+
+        // Get DPS from db
+        let dps = await logDB.query(
+          `SELECT dps FROM logs
+        WHERE spec = $$${playerInfo[playerInfo.length - 1].spec}$$ AND
+        gearscore BETWEEN ${minGearscore} AND ${maxGearscore} AND
+        arkPassiveActive = ${playerInfo[playerInfo.length - 1].arkPassive}`
+        );
+        dps = dps.toArray().map((d) => d.dps);
+        const nBelow = dps.filter((d) => d < playerDPS).length;
+        percentile =
+          Math.round((nBelow / dps.length) * 100) + `% (${dps.length})`;
+      }
+
+      const row = {
+        Name: name,
+        Class: playerInfo[0].class,
+        Pulls: playerInfo.length,
+        "Last Party": playerInfo[playerInfo.length - 1].party,
+        "DPS (Avg)": playerDPS,
+        Percentile: percentile,
+        "Crit Rate":
+          playerInfo
+            .map((player) => player.critPercent)
+            .reduce((a, b) => a + b, 0) / playerInfo.length,
+        "FA Rate":
+          playerInfo
+            .map((player) => player.frontPercent)
+            .reduce((a, b) => a + b, 0) / playerInfo.length,
+        "BA Rate":
+          playerInfo
+            .map((player) => player.backPercent)
+            .reduce((a, b) => a + b, 0) / playerInfo.length,
+        "Dmg Taken (Avg)":
+          playerInfo
+            .map((player) => player.damageTaken)
+            .reduce((a, b) => a + b, 0) / playerInfo.length,
+        "Deaths / Pull":
+          playerInfo.map((player) => player.deaths).reduce((a, b) => a + b, 0) /
+          playerInfo.length,
+        "Deaths (Total)": playerInfo
+          .map((player) => player.deaths)
+          .reduce((a, b) => a + b, 0),
+        Clears: playerInfo.filter((player) => player.cleared == 1).length,
+      };
+
+      return row;
+    })
+  );
 
   const supTable = supNames.map((name) => {
     const playerEncs = tableEncounters.filter((enc) =>
@@ -717,8 +788,6 @@ if (!!selectedEncounter) {
               .reduce((a, b) => a + b, 0) / allies.length
         )
         .reduce((a, b) => a + b, 0) / playerAllies.length;
-
-    // console.log(playerAllies);
 
     const row = {
       Name: name,
