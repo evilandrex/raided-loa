@@ -346,54 +346,44 @@ const supportClasses = [
   "Princess Maker",
 ];
 let url =
-  "https://raw.githubusercontent.com/evilandrex/raided-loa-scraper/main/data/";
+  "https://raw.githubusercontent.com/evilandrex/raided-loa-scraper/dev/data/";
 
 // Check if boss is a guardian
 if (selectedBoss == null) {
-  url += "empty.csv";
+  url += "empty.parquet";
 } else if (guardians.includes(selectedBoss)) {
-  url += `${selectedBoss}.csv`;
+  url += `${selectedBoss}.parquet`;
 } else {
-  url += `${selectedBoss}_G${gate}_${difficulty}.csv`;
+  url += `${selectedBoss}_G${gate}_${difficulty}.parquet`;
 }
 
 // Load data from github
-let data = await aq.loadCSV(url, {
-  parse: {
-    timestamp: (d) => aq.op.parse_date(Number(d)),
-    isDead: (d) => d === "True",
-    weird: (d) => d === "True",
-    arkPassiveActive: (d) => d === "True",
-    localPlayer: (d) => d === "True",
-    hasSpec: (d) => d === "True",
-  },
-});
+const db = await DuckDBClient.of();
+await db.sql`CREATE TABLE logs
+  AS SELECT *
+  FROM read_parquet(${url})`;
 
+let data;
+let filter;
 if (selectedBoss != null) {
   // Add extra day to make sure we actually get everything
   const dateEndExtra = new Date(dateEnd);
   dateEndExtra.setDate(dateEndExtra.getDate() + 1);
 
-  // Filter based on inputs
-  data = data
-    .filter(
-      aq.escape((d) => d.timestamp >= dateStart && d.timestamp <= dateEndExtra)
-    )
-    .filter(aq.escape((d) => (unknownSpec ? true : d.hasSpec === true)))
-    .filter(aq.escape((d) => (filterWeird ? d.weird === false : true)))
-    .filter(aq.escape((d) => (filterDead ? d.isDead === false : true)))
-    .filter(aq.escape((d) => (filterArk ? d.arkPassiveActive === true : true)))
-    .filter(
-      aq.escape((d) => d.gearscore >= iLevelMin && d.gearscore <= iLevelMax)
-    )
-    .filter(
-      aq.escape(
-        (d) =>
-          d.duration >= durationMin * 1000 && d.duration <= durationMax * 1000
-      )
-    )
-    .filter(aq.escape((d) => !aq.op.includes(supportClasses, d.spec)))
-    .reify();
+  // Turn dates into numbers
+  let startTimestamp = dateStart.getTime();
+  let endTimestamp = dateEndExtra.getTime();
+
+  filter = `WHERE timestamp >= ${startTimestamp} and timestamp <= ${endTimestamp} AND
+    ${unknownSpec ? "" : "hasSpec = true AND"} 
+    ${filterWeird ? "" : "weird = false AND"}
+    ${filterDead ? "" : "isDead = false AND"}
+    ${filterArk ? "arkPassiveActive = true AND" : ""}
+    gearscore >= ${iLevelMin} AND gearscore <= ${iLevelMax} AND
+    duration >= ${durationMin * 1000} AND duration <= ${durationMax * 1000} AND
+    spec NOT IN (${supportClasses.map((d) => `'${d}'`).join(", ")})`;
+
+  data = await db.query(`SELECT * FROM logs ${filter}`);
 }
 ```
 
@@ -401,17 +391,16 @@ if (selectedBoss != null) {
 let latestLog;
 let nLogs;
 if (selectedBoss) {
-  nLogs = data
-    .rollup({
-      ids: aq.op.array_agg_distinct("id"),
-    })
-    .array("ids")[0].length;
+  // Get unique IDs
+  nLogs = await db.query(
+    `SELECT COUNT(DISTINCT id) AS nLogs FROM logs ${filter}`
+  );
+  nLogs = nLogs.toArray()[0].nLogs;
 
-  latestLog = data
-    .select("timestamp")
-    .rollup({ latest: aq.op.max("timestamp") })
-    .array("latest")[0]
-    .toLocaleDateString();
+  latestLog = await db.query(
+    `SELECT MAX(timestamp) AS latest FROM logs ${filter}`
+  );
+  latestLog = new Date(latestLog.toArray()[0].latest);
 }
 ```
 
@@ -496,6 +485,7 @@ const classColors = new Map(
 ```
 
 ```js boxplot
+console.log(classData.toArray());
 // Create x-scale (based on dps)
 const maxCol = showStars ? "Max" : "Upper";
 const xLeft = width > minWidth ? yAxisWidth + margins.left : margins.left;
@@ -507,7 +497,7 @@ const xScale = d3
 // Create y-scale (categorical for each class)
 const yScale = d3
   .scaleBand()
-  .domain(selectedClasses.map((d) => d.Build))
+  .domain(selectedClasses.map((d) => d.BuildAndCount))
   .range([margins.top, height - margins.bottom - xAxisHeight])
   .padding(0.2);
 
@@ -522,24 +512,26 @@ const g = svg.append("g").selectAll("g").data(selectedClasses).join("g");
 
 // Add main box
 g.append("rect")
-  .attr("x", (d) => xScale(d.Q1))
-  .attr("y", (d) => yScale(d.Build))
+  .attr("x", (d) => {
+    return xScale(d.Q1);
+  })
+  .attr("y", (d) => yScale(d.BuildAndCount))
   .attr("width", (d) => xScale(d.Q3) - xScale(d.Q1))
   .attr("height", yScale.bandwidth())
-  .attr("fill", (d) => classColors.get(d.Build.split(" (")[0]));
+  .attr("fill", (d) => classColors.get(d.spec.split(" (")[0]));
 
 // Add median line
 g.append("line")
   .attr("x1", (d) => xScale(d.Median))
   .attr("x2", (d) => xScale(d.Median))
-  .attr("y1", (d) => yScale(d.Build))
-  .attr("y2", (d) => yScale(d.Build) + yScale.bandwidth())
+  .attr("y1", (d) => yScale(d.BuildAndCount))
+  .attr("y2", (d) => yScale(d.BuildAndCount) + yScale.bandwidth())
   .attr("stroke", "white");
 
 // Add mean dot
 g.append("circle")
   .attr("cx", (d) => xScale(d.Mean))
-  .attr("cy", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
+  .attr("cy", (d) => yScale(d.BuildAndCount) + yScale.bandwidth() / 2)
   .attr("r", 3)
   .attr("fill", "white");
 
@@ -547,32 +539,32 @@ g.append("circle")
 g.append("line")
   .attr("x1", (d) => xScale(d.Lower))
   .attr("x2", (d) => xScale(d.Q1))
-  .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
-  .attr("y2", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
+  .attr("y1", (d) => yScale(d.BuildAndCount) + yScale.bandwidth() / 2)
+  .attr("y2", (d) => yScale(d.BuildAndCount) + yScale.bandwidth() / 2)
   .attr("stroke", "var(--theme-foreground)");
 
 // Add whisker cap
 g.append("line")
   .attr("x1", (d) => xScale(d.Lower))
   .attr("x2", (d) => xScale(d.Lower))
-  .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 4)
-  .attr("y2", (d) => yScale(d.Build) + (yScale.bandwidth() * 3) / 4)
+  .attr("y1", (d) => yScale(d.BuildAndCount) + yScale.bandwidth() / 4)
+  .attr("y2", (d) => yScale(d.BuildAndCount) + (yScale.bandwidth() * 3) / 4)
   .attr("stroke", "var(--theme-foreground)");
 
 // Add upper whisker
 g.append("line")
   .attr("x1", (d) => xScale(d.Q3))
   .attr("x2", (d) => xScale(d.Upper))
-  .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
-  .attr("y2", (d) => yScale(d.Build) + yScale.bandwidth() / 2)
+  .attr("y1", (d) => yScale(d.BuildAndCount) + yScale.bandwidth() / 2)
+  .attr("y2", (d) => yScale(d.BuildAndCount) + yScale.bandwidth() / 2)
   .attr("stroke", "var(--theme-foreground)");
 
 // Add whisker cap
 g.append("line")
   .attr("x1", (d) => xScale(d.Upper))
   .attr("x2", (d) => xScale(d.Upper))
-  .attr("y1", (d) => yScale(d.Build) + yScale.bandwidth() / 4)
-  .attr("y2", (d) => yScale(d.Build) + (yScale.bandwidth() * 3) / 4)
+  .attr("y1", (d) => yScale(d.BuildAndCount) + yScale.bandwidth() / 4)
+  .attr("y2", (d) => yScale(d.BuildAndCount) + (yScale.bandwidth() * 3) / 4)
   .attr("stroke", "var(--theme-foreground)");
 
 // Create x-axis
@@ -670,7 +662,7 @@ svg
 g.append("rect")
   .attr("class", "rowMouseBox")
   .attr("x", (d) => xScale.range()[0] - yAxisWidth + 25)
-  .attr("y", (d) => yScale(d.Build))
+  .attr("y", (d) => yScale(d.BuildAndCount))
   .attr("width", (d) => xScale.range()[1] - xScale.range()[0] + yAxisWidth - 25)
   .attr("height", yScale.bandwidth())
   .attr("fill", "transparent")
@@ -680,8 +672,8 @@ g.append("rect")
         <div>Rank ${selectedClasses.indexOf(d) + 1}/${
       selectedClasses.length
     }</div>
-        <div>${d.Build.split(" (")[0]}</div>
-        <div>${d.Build.split(" (")[1].replace(")", "")} logs</div>
+        <div>${d.spec}</div>
+        <div>${d.Logs} logs</div>
         <br/>
         <div>Worst: ${d3.format(".3s")(d.Min)}</div>
         <div>Floor: ${d3.format(".3s")(d.Lower)}</div>
@@ -725,7 +717,9 @@ g.append("path")
   .attr(
     "transform",
     (d) =>
-      `translate(${xScale(d.Max)}, ${yScale(d.Build) + yScale.bandwidth() / 2})`
+      `translate(${xScale(d.Max)}, ${
+        yScale(d.BuildAndCount) + yScale.bandwidth() / 2
+      })`
   )
   .attr("fill", "var(--theme-foreground-focus)")
   .attr("opacity", "0.5")
@@ -736,25 +730,19 @@ g.append("path")
 
     // Find the link to the best log
     let bestLink = "https://logs.snow.xyz/logs/";
-    bestLink += data
-      .filter(
-        aq.escape(
-          (log) => log.dps === d.Max && log.spec === d.Build.split(" (")[0]
-        )
-      )
-      .array("id")[0];
-    let bestGearscore = data
-      .filter(
-        aq.escape(
-          (log) => log.dps === d.Max && log.spec === d.Build.split(" (")[0]
-        )
-      )
-      .array("gearscore")[0];
+    bestLink += d.BestLog;
+    // let bestGearscore = data
+    //   .filter(
+    //     aq.escape(
+    //       (log) => log.dps === d.Max && log.spec === d.Build.split(" (")[0]
+    //     )
+    //   )
+    //   .array("gearscore")[0];
 
     tooltip.style("opacity", 1).html(`
       <div class="card" style="padding: 7px;">
-        <div>${d.Build.split(" (")[0]}</div>
-        <div>Item Level: ${d3.format("4.0d")(bestGearscore)}</div>
+        <div>${d.spec}</div>
+        <div>Item Level: ${d3.format("4.0d")(d.BestGearscore)}</div>
         <div>${d3.format(".3s")(d.Max)} DPS</div>
         <div>${bestLink}</div>
       </div>
@@ -777,18 +765,7 @@ g.append("path")
     tooltip.style("top", event.pageY - 30 + "px");
   })
   .on("click", (event, d) => {
-    window.open(
-      `https://logs.snow.xyz/logs/${
-        data
-          .filter(
-            aq.escape(
-              (log) => log.dps === d.Max && log.class === d.Build.split(" (")[0]
-            )
-          )
-          .array("id")[0]
-      }`,
-      "_blank"
-    );
+    window.open(`https://logs.snow.xyz/logs/${d.BestLog}`, "_blank");
   });
 
 svg
@@ -822,7 +799,7 @@ svg
   .attr("font-family", "var(--sans-serif)")
   .attr("font-size", "12px")
   .attr("fill", "var(--theme-foreground-faintest)")
-  .text(`Latest log: ${latestLog}`);
+  .text(`Latest log: ${latestLog.toLocaleDateString()}`);
 
 // Add total logs string
 svg
@@ -862,38 +839,44 @@ if (selectedBoss) {
 ## ${selectedBoss ? "Class Statistics" : ""}
 
 ```js class data table
-const classData = data
-  .groupby("spec")
-  .rollup({
-    Logs: aq.op.count(),
-    Q1: aq.op.quantile("dps", 0.25),
-    Median: aq.op.median("dps"),
-    Mean: aq.op.mean("dps"),
-    Q3: aq.op.quantile("dps", 0.75),
-    Min: aq.op.min("dps"),
-    Max: aq.op.max("dps"),
-  })
-  .derive({
-    IQR: (d) => d.Q3 - d.Q1,
-  })
-  .derive({
-    Lower: (d) => d.Q1 - 1.5 * d.IQR,
-    Upper: (d) => d.Q3 + 1.5 * d.IQR,
-  })
-  .derive({
-    Lower: (d) => Math.max(d.Min, d.Lower),
-    Upper: (d) => Math.min(d.Max, d.Upper),
-  })
-  .derive({
-    spec: (d) => d.spec + ` (${d.Logs})`,
-  })
-  .rename({ spec: "Build" })
-  .orderby(aq.desc(selectedSort))
-  .reify();
+const classData = db.query(`
+  SELECT spec, COUNT(*) AS Logs,
+    quantile(dps, 0.25) AS Q1,
+    median(dps) AS Median,
+    mean(dps) AS Mean,
+    quantile(dps, 0.75) AS Q3,
+    min(dps) AS Min,
+    max(dps) AS Max,
+    Q3 - Q1 AS IQR,
+    IF(Q1 - 15/10 * IQR < Min, Min, Q1 - 15/10 * IQR) AS Lower,
+    IF(Q3 + 15/10 * IQR > Max, Max, Q3 + 15/10 * IQR) AS Upper,
+    spec || ' (' || COUNT(*) || ')' AS BuildAndCount,
+    CAST(list(id ORDER BY dps DESC)[1] AS VARCHAR) AS BestLog,
+    CAST(list(gearscore ORDER BY dps DESC)[1] AS VARCHAR) AS BestGearscore,
+  FROM logs
+  ${filter}
+  GROUP BY spec
+  ORDER BY ${selectedSort} DESC
+`);
 
 const classTable = Inputs.table(classData, {
+  columns: [
+    "spec",
+    "Logs",
+    "Q1",
+    "Median",
+    "Mean",
+    "Q3",
+    "Min",
+    "Max",
+    "IQR",
+    "Lower",
+    "Upper",
+  ],
+  header: {
+    spec: "Build",
+  },
   format: {
-    Build: (d) => d.split(" (")[0],
     Q1: d3.format(".3s"),
     Median: d3.format(".3s"),
     Mean: d3.format(".3s"),
@@ -924,41 +907,20 @@ const allSpecs = classSpecs
 
 // For each spec, find the top 5 logs
 const logLinkStub = "https://logs.snow.xyz/logs/";
-const topLogs = {
-  spec: allSpecs,
-  log1: [],
-  log2: [],
-  log3: [],
-  log4: [],
-  log5: [],
-};
-for (const spec of allSpecs) {
-  const specIDs = data
-    .filter(aq.escape((d) => d.spec === spec))
-    .orderby(aq.desc("dps"))
-    .array("id");
-  const bestDPS = data
-    .filter(aq.escape((d) => d.spec === spec))
-    .orderby(aq.desc("dps"))
-    .array("dps");
-
-  topLogs.log1.push([specIDs[0], bestDPS[0]]);
-  topLogs.log2.push([specIDs[1], bestDPS[1]]);
-  topLogs.log3.push([specIDs[2], bestDPS[2]]);
-  topLogs.log4.push([specIDs[3], bestDPS[3]]);
-  topLogs.log5.push([specIDs[4], bestDPS[4]]);
-}
-
-const topLogsTable = aq.table(topLogs).rename({
-  spec: "Build",
-  log1: "#1",
-  log2: "#2",
-  log3: "#3",
-  log4: "#4",
-  log5: "#5",
-});
+let topLogs = await db.query(`
+  SELECT spec,
+  [CAST(list(id ORDER BY dps DESC)[1] AS VARCHAR),  CAST(list(dps ORDER BY dps DESC)[1] AS BIGINT)] AS log1,
+  [CAST(list(id ORDER BY dps DESC)[2] AS VARCHAR),  CAST(list(dps ORDER BY dps DESC)[2] AS BIGINT)] AS log2,
+  [CAST(list(id ORDER BY dps DESC)[3] AS VARCHAR),  CAST(list(dps ORDER BY dps DESC)[3] AS BIGINT)] AS log3,
+  [CAST(list(id ORDER BY dps DESC)[4] AS VARCHAR),  CAST(list(dps ORDER BY dps DESC)[4] AS BIGINT)] AS log4,
+  [CAST(list(id ORDER BY dps DESC)[5] AS VARCHAR),  CAST(list(dps ORDER BY dps DESC)[5] AS BIGINT)] AS log5,
+  FROM logs
+  ${filter}
+  GROUP BY spec
+`);
 
 function idToLog(d) {
+  d = d.toArray();
   if (d[0]) {
     return htl.html`<a href="${logLinkStub}${d[0]}" target="_blank">${d3.format(
       ".3s"
@@ -970,15 +932,23 @@ function idToLog(d) {
 
 if (selectedBoss) {
   display(
-    Inputs.table(topLogsTable, {
-      format: {
-        "#1": idToLog,
-        "#2": idToLog,
-        "#3": idToLog,
-        "#4": idToLog,
-        "#5": idToLog,
+    Inputs.table(topLogs, {
+      header: {
+        spec: "Build",
+        log1: "#1",
+        log2: "#2",
+        log3: "#3",
+        log4: "#4",
+        log5: "#5",
       },
-      sort: "Build",
+      format: {
+        log1: idToLog,
+        log2: idToLog,
+        log3: idToLog,
+        log4: idToLog,
+        log5: idToLog,
+      },
+      sort: "spec",
       layout: "auto",
     })
   );
