@@ -346,7 +346,7 @@ const supportClasses = [
   "Princess",
 ];
 let url =
-  "https://raw.githubusercontent.com/evilandrex/raided-loa-scraper/dev/data/";
+  "https://raw.githubusercontent.com/evilandrex/raided-loa-scraper/main/data/";
 
 // Check if boss is a guardian
 if (selectedBoss == null) {
