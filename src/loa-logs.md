@@ -376,8 +376,8 @@ if (selectedBoss != null) {
 
   filter = `WHERE timestamp >= ${startTimestamp} and timestamp <= ${endTimestamp} AND
     ${unknownSpec ? "" : "hasSpec = true AND"} 
-    ${filterWeird ? "" : "weird = true AND"}
-    ${filterDead ? "" : "isDead = false AND"}
+    ${filterWeird ? "weird = false AND" : ""}
+    ${filterDead ? "isDead = false AND" : ""}
     ${filterArk ? "arkPassiveActive = true AND" : ""}
     gearscore >= ${iLevelMin} AND gearscore <= ${iLevelMax} AND
     duration >= ${durationMin * 1000} AND duration <= ${durationMax * 1000} AND
