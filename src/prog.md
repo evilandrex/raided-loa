@@ -682,7 +682,7 @@ if (!!selectedEncounter) {
           `SELECT dps FROM logs
         WHERE spec = $$${playerInfo[playerInfo.length - 1].spec}$$ AND
         gearscore BETWEEN ${minGearscore} AND ${maxGearscore} AND
-        arkPassiveActive = ${playerInfo[playerInfo.length - 1].arkPassive}`
+        arkPassiveActive = true`
         );
         dps = dps.toArray().map((d) => d.dps);
         const nBelow = dps.filter((d) => d < playerDPS).length;
