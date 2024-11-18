@@ -27,7 +27,7 @@ toc: false
         </br>
         Percentiles are calculated using the available global data for a given 
         encounter. Specifically, we filter by spec, gear score (you can change 
-        the window), and whether the player had their ark passive active. The
+        the window). The
         value in the parantheses is the number of logs used to calculate the
         percentile.
     </div>
