@@ -145,7 +145,14 @@ const selectedSort = Generators.input(sortSelect);
 
 ```js patch selector
 const patches = new Map([
-  ["October 2024 - T4 Release", [new Date(`2024-10-9`), Date.now()]],
+  [
+    "November 2024 - Minor Balance (Current)",
+    [new Date(`2024-11-27`), Date.now()],
+  ],
+  [
+    "October 2024 - T4 Release",
+    [new Date(`2024-10-9`), new Date(`2024-11-26`)],
+  ],
 ]);
 
 const patchSelect = Inputs.select(patches, {
