@@ -5,13 +5,6 @@ toc: false
 
 <h1>Raided Lost Ark</h1>
 
-<div class="warning">First pass data collection is ongoing. Data collection 
-is going backwards starting from Aegir (Aegir should be up to date). If 
-little/no data is available for a given encounter, it is likely because the data 
-has not been collected yet. This dataset will focus on Ark Passive T4 content. 
-Give your thanks to Snow for providing this data!
-</div>
-
 <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card">
       <h1>Select a fight</h1>
@@ -65,7 +58,7 @@ const urlParams = new URLSearchParams(window.location.search);
 ```
 
 ```js boss selector
-const guardians = ["Argeos"];
+const guardians = [];
 
 const raids = {
   Echidna: [1, 2],
@@ -146,12 +139,12 @@ const selectedSort = Generators.input(sortSelect);
 ```js patch selector
 const patches = new Map([
   [
-    "November 2024 - Minor Balance (Current)",
-    [new Date(`2024-11-27`), Date.now()],
-  ],
-  [
     "October 2024 - T4 Release",
     [new Date(`2024-10-9`), new Date(`2024-11-26`)],
+  ],
+  [
+    "November 2024 - Minor Balance (Current)",
+    [new Date(`2024-11-27`), Date.now()],
   ],
 ]);
 
