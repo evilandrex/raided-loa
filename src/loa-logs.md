@@ -126,6 +126,8 @@ const sortSelect = Inputs.select(
     ["Mean (alternate middle, good for small samples)", "Mean"],
     ["Upper (reasonable ceiling)", "Upper"],
     ["Lower (reasonable floor)", "Lower"],
+    ["Q3 (lowest in top 25%)", "Q3"],
+    ["Q1 (lowest in top 75%)", "Q1"],
     ["Max (the best!)", "Max"],
   ]),
   {

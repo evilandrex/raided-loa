@@ -11,6 +11,8 @@
   "meanDesc": "(alternate middle, good for small samples)",
   "upperDesc": "(reasonable ceiling)",
   "lowerDesc": "(reasonable floor)",
+  "Q1Desc": "(lowest in top 75%)",
+  "Q3Desc": "(lowest in top 25%)",
   "maxDesc": "(the best!)",
   "startDate": "Start Date",
   "endDate": "End Date",
