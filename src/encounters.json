@@ -157,6 +157,14 @@
     "names": ["Aegir, the Oppressor", "Pulsating Giant's Heart"],
     "difficulties": ["Normal", "Hard"]
   },
+  "Brelshaza 2 G1" {
+    "names": ["Narok the Butcher"],
+    "difficulties": ["Normal", "Hard"]
+  },
+  "Brelshaza 2 G1" {
+    "names": ["Phantom Manifester Brelshaza"],
+    "difficulties": ["Normal", "Hard"]
+  },
   "Deskaluda": {
     "names": ["Deskaluda"],
     "difficulties": [""]
@@ -191,6 +199,10 @@
   },
   "Argeos": {
     "names": ["Argeos"],
+    "difficulties": [""]
+  },
+  "Skolakia": {
+    "names": ["Skolakia"],
     "difficulties": [""]
   }
 }
