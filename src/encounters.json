@@ -162,7 +162,10 @@
     "difficulties": ["Normal", "Hard"]
   },
   "Brelshaza 2 G2": {
-    "names": ["Phantom Manifester Brelshaza"],
+    "names": [
+      "Phantom Manifester Brelshaza",
+      "Phantom Legion Commander Brelshaza"
+    ],
     "difficulties": ["Normal", "Hard"]
   },
   "Deskaluda": {
