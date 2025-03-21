@@ -322,17 +322,19 @@ async function get_encounter_info(encID) {
           )[0]
         )
       : 0;
+
+    let damageWithoutHA =
+      damageInfo["damageDealt"] - damageInfo["hyperAwakeningDamage"];
     playerInfo.push({
       name: entity["name"],
       class: entity["spec"] ? entity["spec"] : entity["class"],
       isSupport: supportClasses.includes(entity["class"]),
       party: party,
       dps: damageInfo["dps"],
-      supAPUptime: damageInfo["buffedBySupport"] / damageInfo["damageDealt"],
-      supBrandUptime:
-        damageInfo["debuffedBySupport"] / damageInfo["damageDealt"],
-      supIdentityUptime:
-        damageInfo["buffedByIdentity"] / damageInfo["damageDealt"],
+      supAPUptime: damageInfo["buffedBySupport"] / damageWithoutHA,
+      supBrandUptime: damageInfo["debuffedBySupport"] / damageWithoutHA,
+      supIdentityUptime: damageInfo["buffedByIdentity"] / damageWithoutHA,
+      supHTUptime: damageInfo["buffedByHat"] / damageWithoutHA,
       shielded: damageInfo["damageAbsorbedOnOthers"],
       critPercent: skillStats["crits"] / skillStats["hits"],
       frontPercent: skillStats["frontAttacks"] / skillStats["hits"],
@@ -385,6 +387,14 @@ async function get_encounter_info(encID) {
           .reduce((a, b) => a + b, 0) / nDPS
       : 0;
 
+  const avgHTUptime =
+    nDPS > 0
+      ? playerInfo
+          .filter((player) => !player.isSupport)
+          .map((player) => player.supHTUptime)
+          .reduce((a, b) => a + b, 0) / nDPS
+      : 0;
+
   return {
     id: encID,
     avgTeamDps: avgTeamDps,
@@ -397,6 +407,7 @@ async function get_encounter_info(encID) {
     avgAPUptime: avgAPUptime,
     avgBrandUptime: avgBrandUptime,
     avgIdentityUptime: avgIdentityUptime,
+    avgHTUptime: avgHTUptime,
     deaths: playerInfo
       .map((player) => player.deaths)
       .reduce((a, b) => a + b, 0),
@@ -468,6 +479,7 @@ let totalDuration,
   avgAPUptime,
   avgBrandUptime,
   avgIdentityUptime,
+  avgHTUptime,
   bestEncounter,
   avgBossBarsComplete;
 
@@ -502,6 +514,10 @@ if (!!selectedEncounter) {
       .map((enc) => enc.avgIdentityUptime)
       .reduce((a, b) => a + b, 0) / tableEncounters.length;
 
+  avgHTUptime =
+    tableEncounters.map((enc) => enc.avgHTUptime).reduce((a, b) => a + b, 0) /
+    tableEncounters.length;
+
   bestEncounter = tableEncounters.reduce((a, b) =>
     a.barsComplete > b.barsComplete ? a : b
   );
@@ -532,7 +548,7 @@ if (!!selectedEncounter) {
     <div>
       Avg Sup. Performance: ${Math.round(avgAPUptime * 100)}/${Math.round(
         avgBrandUptime * 100
-      )}/${Math.round(avgIdentityUptime * 100)}
+      )}/${Math.round(avgIdentityUptime * 100)}/${Math.round(avgHTUptime * 100)}
       <br />
       Avg Complete: ${avgBossBarsComplete}/${selectedBossTotalBars} bars
     </div>
@@ -549,7 +565,7 @@ if (!!selectedEncounter) {
         bestEncounter.avgAPUptime * 100
       )}/${Math.round(bestEncounter.avgBrandUptime * 100)}/${Math.round(
         bestEncounter.avgIdentityUptime * 100
-      )}
+      )}/${Math.round(bestEncounter.avgHTUptime * 100)}
     </div>
   </div> `);
 }
@@ -594,7 +610,9 @@ if (!!selectedEncounter) {
       "DPS Taken (Total)": enc.avgTeamDPSTaken,
       "Sup. Perf.": `${Math.round(enc.avgAPUptime * 100)}/${Math.round(
         enc.avgBrandUptime * 100
-      )}/${Math.round(enc.avgIdentityUptime * 100)}`,
+      )}/${Math.round(enc.avgIdentityUptime * 100)}/${Math.round(
+        enc.avgHTUptime * 100
+      )}`,
       Deaths: enc.playerInfo
         .map((player) => player.deaths)
         .reduce((a, b) => a + b, 0),
@@ -789,6 +807,15 @@ if (!!selectedEncounter) {
         )
         .reduce((a, b) => a + b, 0) / playerAllies.length;
 
+    const allyHTUptime =
+      playerAllies
+        .map(
+          (allies) =>
+            allies.map((ally) => ally.supHTUptime).reduce((a, b) => a + b, 0) /
+            allies.length
+        )
+        .reduce((a, b) => a + b, 0) / playerAllies.length;
+
     const row = {
       Name: name,
       Class: playerClass,
@@ -797,6 +824,7 @@ if (!!selectedEncounter) {
       "AP %": allyAPUptime,
       "Brand %": allyBrandUptime,
       "Identity %": allyIdentityUptime,
+      "HT %": allyHTUptime,
       "Dmg Shielded (Avg)": playerShielded,
       "Dmg Taken (Avg)":
         player.map((player) => player.damageTaken).reduce((a, b) => a + b, 0) /
@@ -834,6 +862,7 @@ if (!!selectedEncounter) {
         "AP %": formatPercent,
         "Brand %": formatPercent,
         "Identity %": formatPercent,
+        "HT %": formatPercent,
         "Dmg Shielded (Avg)": formatThousands,
         "Dmg Taken (Avg)": formatThousands,
         "Last Party": (x) => x + 1,
