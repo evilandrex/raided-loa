@@ -168,6 +168,24 @@
     ],
     "difficulties": ["Normal", "Hard"]
   },
+  "Mordum G1": {
+    "names": [
+      "Thaemine, Master of Darkness", 
+      "Infernas"
+    ],
+    "difficulties": ["Normal", "Hard"]
+  },
+  "Mordum G2": {
+    "names": ["Blossoming Fear, Naitreya"],
+    "difficulties": ["Normal", "Hard"]
+  },
+  "Mordum G3": {
+    "names": [
+      "Mordum, the Abyssal Punisher", 
+      "Flash of Punishment"
+    ],
+    "difficulties": ["Normal", "Hard"]
+  },
   "Deskaluda": {
     "names": ["Deskaluda"],
     "difficulties": [""]
@@ -206,6 +224,10 @@
   },
   "Skolakia": {
     "names": ["Skolakia"],
+    "difficulties": [""]
+  },
+  "Drextalas": {
+    "names": ["Drextalas"],
     "difficulties": [""]
   }
 }
